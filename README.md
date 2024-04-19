@@ -16,7 +16,7 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 * [Rodrigo Penaforte -  [@RodrigoPenaforte](https://github.com/RodrigoPenaforte)]
 * [Marcio Cabanhas - [@maojsm](https://github.com/maojsm)]
 * [Guilherme Bley - [@GuilhermeBley](https://github.com/GuilhermeBley)]
-* [Zugor]
+* [Igor Cardosos - [@zugor98](https://github.com/zugor98)]
 
 ## ⚙️ Tecnologias
 * C# 12
