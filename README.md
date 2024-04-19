@@ -10,7 +10,7 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 
 ## Participantes
 ### 🚀 Capitão
-[Gustavo Stephano e @zStephano]
+[Gustavo Stephano e [@zStephano](https://github.com/zStephano)]
 
 ### 💂‍♀️ Batalhão
 * [Rodrigo Penaforte -  https://github.com/RodrigoPenaforte]
