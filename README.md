@@ -13,9 +13,9 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 [Gustavo Stephano e [@zStephano](https://github.com/zStephano)]
 
 ### 💂‍♀️ Batalhão
-* [Rodrigo Penaforte -  https://github.com/RodrigoPenaforte]
-* [Marcio Cabanhas - https://github.com/maojsm]
-* [Guilherme Bley - https://github.com/GuilhermeBley]
+* [Rodrigo Penaforte -  [@RodrigoPenaforte](https://github.com/RodrigoPenaforte)]
+* [Marcio Cabanhas - [@maojsm](https://github.com/maojsm)]
+* [Guilherme Bley - [@GuilhermeBley](https://github.com/GuilhermeBley)]
 * [Zugor]
 
 ## ⚙️ Tecnologias
