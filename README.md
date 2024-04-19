@@ -10,13 +10,13 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 
 ## Participantes
 ### 🚀 Capitão
-[NOME e GITHUB]
+[Gustavo Stephano e @zStephano]
 
 ### 💂‍♀️ Batalhão
-* [NOME e GITHUB]
-* [NOME e GITHUB]
-* [NOME e GITHUB]
-* [NOME e GITHUB]
+* [Rodrigo Penaforte -  https://github.com/RodrigoPenaforte]
+* [Marcio Cabanhas - https://github.com/maojsm]
+* [Guilherme Bley - https://github.com/GuilhermeBley]
+* [Zugor]
 
 ## ⚙️ Tecnologias
 * C# 12
