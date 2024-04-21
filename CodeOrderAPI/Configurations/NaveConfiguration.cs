@@ -15,6 +15,9 @@ namespace CodeOrderAPI.Configurations
             builder.Property(x => x.Name).HasMaxLength(500);
             builder.Property(x => x.Model).HasMaxLength(500);
             builder.Property(x => x.Manufacturer).HasMaxLength(500);
+
+            builder.HasMany(x => x.Movies).WithMany(c => c.Starships);
+
         }
     }
 }

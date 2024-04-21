@@ -12,9 +12,7 @@
         public string Terrain { get; set; } = string.Empty;
         public int SurfaceWater { get; set; }
         public long Population { get; set; }
-
         public List<Personagem> Characters { get; set; } = new List<Personagem>();
-
         public List<Filme> Movies { get; set; } = new List<Filme>();
     }
 }

@@ -15,7 +15,8 @@ namespace CodeOrderAPI.Configurations
             builder.Property(x => x.SkinColor).HasMaxLength(500);
             builder.Property(x => x.EyeColor).HasMaxLength(500);
 
-            builder.HasOne(x => x.Planeta).WithMany().HasForeignKey(x => x.PlanetaId);
+            builder.HasOne(x => x.Planet).WithMany(c => c.Characters);
+            builder.HasMany(x => x.Movie).WithMany(c => c.Characters);
         }
     }
 }

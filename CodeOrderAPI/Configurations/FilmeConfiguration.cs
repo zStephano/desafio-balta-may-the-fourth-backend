@@ -16,6 +16,7 @@ namespace CodeOrderAPI.Configurations
             builder.Property(x => x.OpeningCrawl).HasMaxLength(500);
             builder.Property(x => x.Director).HasMaxLength(500);
             builder.Property(x => x.Producer).HasMaxLength(500);
+
         }
     }
 }

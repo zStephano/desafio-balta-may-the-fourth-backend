@@ -15,6 +15,8 @@ namespace CodeOrderAPI.Configurations
             builder.Property(x => x.RotationPeriod).HasMaxLength(500);
             builder.Property(x => x.OrbitalPeriod).HasMaxLength(500);
             builder.Property(x => x.Terrain).HasMaxLength(500);
+
+            builder.HasMany(x => x.Characters).WithMany(c => c.Planet);
         }
     }
 }

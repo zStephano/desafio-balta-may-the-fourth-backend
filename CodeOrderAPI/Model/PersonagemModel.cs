@@ -6,7 +6,7 @@ namespace CodeOrderAPI.Model
     {
 
         public int Id { get; set;}
-        public string Nome { get; set;} = string.Empty;
+        public string Name { get; set;} = string.Empty;
         public decimal Height { get; set;}
         public decimal Weight { get; set;}
         public string HairColor { get; set;}= string.Empty;
@@ -14,8 +14,7 @@ namespace CodeOrderAPI.Model
         public string EyeColor { get; set;}= string.Empty;
         public  DateTime BirthYear { get; set; }
         public  Genero Gender { get; set; }
-
-        public int PlanetaId { get; set; }
-        public Planeta? Planeta { get; set; }
+        public Planeta Planet { get; set; }
+        public List<Filme> Movie { get; set; }
     }
 }
