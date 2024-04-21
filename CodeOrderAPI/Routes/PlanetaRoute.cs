@@ -8,8 +8,8 @@ namespace CodeOrderAPI
         {
             var summaries = new[]
             {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+                "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+            };
 
             app.MapGet("/Planeta", () =>
             {
@@ -26,6 +26,5 @@ namespace CodeOrderAPI
             .WithName("Planeta")
             .WithOpenApi();
         }
-       
     }
 }
