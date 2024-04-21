@@ -8,7 +8,7 @@ namespace CodeOrderAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<Filme> builder)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

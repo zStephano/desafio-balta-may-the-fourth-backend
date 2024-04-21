@@ -4,14 +4,14 @@ namespace CodeOrderAPI
 {
     public static class PersonagemRoute
     {
-        public static void MapProductEndpoints(this WebApplication app)
+        public static void MapPersonagemEndpoints(this WebApplication app)
         {
             var summaries = new[]
             {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-            app.MapGet("/weatherforecast", () =>
+            app.MapGet("/Personagem", () =>
             {
                 var forecast = Enumerable.Range(1, 5).Select(index =>
                     new WeatherForecast
@@ -23,7 +23,7 @@ namespace CodeOrderAPI
                     .ToArray();
                 return forecast;
             })
-            .WithName("GetWeatherForecast")
+            .WithName("Personagem")
             .WithOpenApi();
         }
        

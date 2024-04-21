@@ -4,14 +4,14 @@ namespace CodeOrderAPI
 {
     public static class PlanetaRoute
     {
-        public static void MapProductEndpoints(this WebApplication app)
+        public static void MapPlanetaEndpoints(this WebApplication app)
         {
             var summaries = new[]
             {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-            app.MapGet("/weatherforecast", () =>
+            app.MapGet("/Planeta", () =>
             {
                 var forecast = Enumerable.Range(1, 5).Select(index =>
                     new WeatherForecast
@@ -23,7 +23,7 @@ namespace CodeOrderAPI
                     .ToArray();
                 return forecast;
             })
-            .WithName("GetWeatherForecast")
+            .WithName("Planeta")
             .WithOpenApi();
         }
        

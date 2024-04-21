@@ -1,5 +1,6 @@
 using CodeOrderAPI;
 using CodeOrderAPI.Data;
+using CodeOrderAPI.Routes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapProductEndpoints();
+app.MapFilmeEndpoints();
+app.MapNaveEndpoints();
+app.MapPersonagemEndpoints();
+app.MapPlanetaEndpoints();
+app.MapVeiculoEndpoints();
+
 
 app.Run();
+
 
 

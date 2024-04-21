@@ -5,14 +5,14 @@ namespace CodeOrderAPI.Routes
 {
     public static class FilmeRoute
     {
-        public static void MapProductEndpoints(this WebApplication app)
+        public static void MapFilmeEndpoints(this WebApplication app)
         {
             var summaries = new[]
             {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-            app.MapGet("/weatherforecast", (DataContext context) =>
+            app.MapGet("/Filme", (DataContext context) =>
             {
                 var forecast = Enumerable.Range(1, 5).Select(index =>
                     new WeatherForecast
@@ -24,7 +24,7 @@ namespace CodeOrderAPI.Routes
                     .ToArray();
                 return forecast;
             })
-            .WithName("GetWeatherForecast")
+            .WithName("Filme")
             .WithOpenApi();
 
         }
