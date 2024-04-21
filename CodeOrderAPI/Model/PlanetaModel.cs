@@ -3,7 +3,7 @@
     public class Planeta
     {
         public int Id { get; set;}
-        public string Nome { get; set;} = string.Empty;
+        public string Name { get; set;} = string.Empty;
         public TimeSpan RotationPeriod { get; set;}
         public TimeSpan OrbitalPeriod { get; set;}
         public decimal Diameter { get; set; }

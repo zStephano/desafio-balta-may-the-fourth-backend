@@ -15,6 +15,6 @@ namespace CodeOrderAPI.Model
         public  DateTime BirthYear { get; set; }
         public  Genero Gender { get; set; }
         public Planeta Planet { get; set; }
-        public List<Filme> Movie { get; set; }
+        public List<Filme> Movies { get; set; }
     }
 }

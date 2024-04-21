@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CodeOrderAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class initial_creation : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,8 +47,8 @@ namespace CodeOrderAPI.Migrations
                     CargoCapacity = table.Column<decimal>(type: "numeric", nullable: false),
                     HyperdriveRating = table.Column<decimal>(type: "numeric", nullable: false),
                     Mglt = table.Column<int>(type: "integer", nullable: false),
-                    Consumables = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    Class = table.Column<string>(type: "text", nullable: false)
+                    Consumables = table.Column<TimeSpan>(type: "interval", maxLength: 500, nullable: false),
+                    Class = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -61,15 +61,15 @@ namespace CodeOrderAPI.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Nome = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Name = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     RotationPeriod = table.Column<TimeSpan>(type: "interval", maxLength: 500, nullable: false),
                     OrbitalPeriod = table.Column<TimeSpan>(type: "interval", maxLength: 500, nullable: false),
-                    Diameter = table.Column<decimal>(type: "numeric", nullable: false),
-                    Climate = table.Column<string>(type: "text", nullable: false),
-                    Gravity = table.Column<decimal>(type: "numeric", nullable: false),
+                    Diameter = table.Column<decimal>(type: "numeric", maxLength: 500, nullable: false),
+                    Climate = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Gravity = table.Column<decimal>(type: "numeric", maxLength: 500, nullable: false),
                     Terrain = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    SurfaceWater = table.Column<int>(type: "integer", nullable: false),
-                    Population = table.Column<long>(type: "bigint", nullable: false)
+                    SurfaceWater = table.Column<int>(type: "integer", maxLength: 500, nullable: false),
+                    Population = table.Column<long>(type: "bigint", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -100,7 +100,7 @@ namespace CodeOrderAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FilmeNave",
+                name: "FilmesNaves",
                 columns: table => new
                 {
                     MoviesId = table.Column<int>(type: "integer", nullable: false),
@@ -108,15 +108,15 @@ namespace CodeOrderAPI.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FilmeNave", x => new { x.MoviesId, x.StarshipsId });
+                    table.PrimaryKey("PK_FilmesNaves", x => new { x.MoviesId, x.StarshipsId });
                     table.ForeignKey(
-                        name: "FK_FilmeNave_Filme_MoviesId",
+                        name: "FK_FilmesNaves_Filme_MoviesId",
                         column: x => x.MoviesId,
                         principalTable: "Filme",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FilmeNave_Nave_StarshipsId",
+                        name: "FK_FilmesNaves_Nave_StarshipsId",
                         column: x => x.StarshipsId,
                         principalTable: "Nave",
                         principalColumn: "Id",
@@ -124,24 +124,24 @@ namespace CodeOrderAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "FilmePlaneta",
+                name: "FilmesPlanets",
                 columns: table => new
                 {
                     MoviesId = table.Column<int>(type: "integer", nullable: false),
-                    PlanetasId = table.Column<int>(type: "integer", nullable: false)
+                    PlanetsId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FilmePlaneta", x => new { x.MoviesId, x.PlanetasId });
+                    table.PrimaryKey("PK_FilmesPlanets", x => new { x.MoviesId, x.PlanetsId });
                     table.ForeignKey(
-                        name: "FK_FilmePlaneta_Filme_MoviesId",
+                        name: "FK_FilmesPlanets_Filme_MoviesId",
                         column: x => x.MoviesId,
                         principalTable: "Filme",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FilmePlaneta_Planeta_PlanetasId",
-                        column: x => x.PlanetasId,
+                        name: "FK_FilmesPlanets_Planeta_PlanetsId",
+                        column: x => x.PlanetsId,
                         principalTable: "Planeta",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -153,7 +153,7 @@ namespace CodeOrderAPI.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Nome = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Height = table.Column<decimal>(type: "numeric", nullable: false),
                     Weight = table.Column<decimal>(type: "numeric", nullable: false),
                     HairColor = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
@@ -161,109 +161,120 @@ namespace CodeOrderAPI.Migrations
                     EyeColor = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     BirthYear = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Gender = table.Column<int>(type: "integer", nullable: false),
-                    PlanetaId = table.Column<int>(type: "integer", nullable: false),
-                    FilmeId = table.Column<int>(type: "integer", nullable: true),
-                    PlanetaId1 = table.Column<int>(type: "integer", nullable: true)
+                    CharacterId = table.Column<int>(type: "integer", nullable: false),
+                    PlanetId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Personagem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Personagem_Filme_FilmeId",
-                        column: x => x.FilmeId,
-                        principalTable: "Filme",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Personagem_Planeta_PlanetaId",
-                        column: x => x.PlanetaId,
+                        name: "FK_Personagem_Planeta_CharacterId",
+                        column: x => x.CharacterId,
                         principalTable: "Planeta",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Personagem_Planeta_PlanetaId1",
-                        column: x => x.PlanetaId1,
-                        principalTable: "Planeta",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "FilmeVeiculo",
+                name: "FilmesVeiculos",
                 columns: table => new
                 {
                     MoviesId = table.Column<int>(type: "integer", nullable: false),
-                    VeiculosId = table.Column<int>(type: "integer", nullable: false)
+                    VeichlesId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FilmeVeiculo", x => new { x.MoviesId, x.VeiculosId });
+                    table.PrimaryKey("PK_FilmesVeiculos", x => new { x.MoviesId, x.VeichlesId });
                     table.ForeignKey(
-                        name: "FK_FilmeVeiculo_Filme_MoviesId",
+                        name: "FK_FilmesVeiculos_Filme_MoviesId",
                         column: x => x.MoviesId,
                         principalTable: "Filme",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_FilmeVeiculo_Veiculo_VeiculosId",
-                        column: x => x.VeiculosId,
+                        name: "FK_FilmesVeiculos_Veiculo_VeichlesId",
+                        column: x => x.VeichlesId,
                         principalTable: "Veiculo",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "FilmesPersonagens",
+                columns: table => new
+                {
+                    CharactersId = table.Column<int>(type: "integer", nullable: false),
+                    MoviesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FilmesPersonagens", x => new { x.CharactersId, x.MoviesId });
+                    table.ForeignKey(
+                        name: "FK_FilmesPersonagens_Filme_MoviesId",
+                        column: x => x.MoviesId,
+                        principalTable: "Filme",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FilmesPersonagens_Personagem_CharactersId",
+                        column: x => x.CharactersId,
+                        principalTable: "Personagem",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_FilmeNave_StarshipsId",
-                table: "FilmeNave",
+                name: "IX_FilmesNaves_StarshipsId",
+                table: "FilmesNaves",
                 column: "StarshipsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FilmePlaneta_PlanetasId",
-                table: "FilmePlaneta",
-                column: "PlanetasId");
+                name: "IX_FilmesPersonagens_MoviesId",
+                table: "FilmesPersonagens",
+                column: "MoviesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FilmeVeiculo_VeiculosId",
-                table: "FilmeVeiculo",
-                column: "VeiculosId");
+                name: "IX_FilmesPlanets_PlanetsId",
+                table: "FilmesPlanets",
+                column: "PlanetsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Personagem_FilmeId",
+                name: "IX_FilmesVeiculos_VeichlesId",
+                table: "FilmesVeiculos",
+                column: "VeichlesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Personagem_CharacterId",
                 table: "Personagem",
-                column: "FilmeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Personagem_PlanetaId",
-                table: "Personagem",
-                column: "PlanetaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Personagem_PlanetaId1",
-                table: "Personagem",
-                column: "PlanetaId1");
+                column: "CharacterId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "FilmeNave");
+                name: "FilmesNaves");
 
             migrationBuilder.DropTable(
-                name: "FilmePlaneta");
+                name: "FilmesPersonagens");
 
             migrationBuilder.DropTable(
-                name: "FilmeVeiculo");
+                name: "FilmesPlanets");
 
             migrationBuilder.DropTable(
-                name: "Personagem");
+                name: "FilmesVeiculos");
 
             migrationBuilder.DropTable(
                 name: "Nave");
 
             migrationBuilder.DropTable(
-                name: "Veiculo");
+                name: "Personagem");
 
             migrationBuilder.DropTable(
                 name: "Filme");
+
+            migrationBuilder.DropTable(
+                name: "Veiculo");
 
             migrationBuilder.DropTable(
                 name: "Planeta");

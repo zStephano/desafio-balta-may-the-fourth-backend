@@ -1,5 +1,4 @@
-﻿
-namespace CodeOrderAPI.Model
+﻿namespace CodeOrderAPI.Model
 {
     public class Filme
     {

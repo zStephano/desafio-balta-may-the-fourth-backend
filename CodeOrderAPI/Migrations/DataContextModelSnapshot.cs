@@ -74,9 +74,11 @@ namespace CodeOrderAPI.Migrations
 
                     b.Property<string>("Class")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<TimeSpan>("Consumables")
+                        .HasMaxLength(500)
                         .HasColumnType("interval");
 
                     b.Property<decimal>("CostInCredits")
@@ -131,13 +133,13 @@ namespace CodeOrderAPI.Migrations
                     b.Property<DateTime>("BirthYear")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("EyeColor")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<int?>("FilmeId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("Gender")
                         .HasColumnType("integer");
@@ -150,14 +152,12 @@ namespace CodeOrderAPI.Migrations
                     b.Property<decimal>("Height")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Nome")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-                    b.Property<int>("PlanetaId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PlanetaId1")
+                    b.Property<int>("PlanetId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SkinColor")
@@ -170,11 +170,7 @@ namespace CodeOrderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FilmeId");
-
-                    b.HasIndex("PlanetaId");
-
-                    b.HasIndex("PlanetaId1");
+                    b.HasIndex("CharacterId");
 
                     b.ToTable("Personagem", (string)null);
                 });
@@ -189,15 +185,18 @@ namespace CodeOrderAPI.Migrations
 
                     b.Property<string>("Climate")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<decimal>("Diameter")
+                        .HasMaxLength(500)
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("Gravity")
+                        .HasMaxLength(500)
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Nome")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -207,6 +206,7 @@ namespace CodeOrderAPI.Migrations
                         .HasColumnType("interval");
 
                     b.Property<long>("Population")
+                        .HasMaxLength(500)
                         .HasColumnType("bigint");
 
                     b.Property<TimeSpan>("RotationPeriod")
@@ -214,6 +214,7 @@ namespace CodeOrderAPI.Migrations
                         .HasColumnType("interval");
 
                     b.Property<int>("SurfaceWater")
+                        .HasMaxLength(500)
                         .HasColumnType("integer");
 
                     b.Property<string>("Terrain")
@@ -280,7 +281,22 @@ namespace CodeOrderAPI.Migrations
                     b.ToTable("Veiculo", (string)null);
                 });
 
-            modelBuilder.Entity("FilmeNave", b =>
+            modelBuilder.Entity("FilmePersonagem", b =>
+                {
+                    b.Property<int>("CharactersId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MoviesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharactersId", "MoviesId");
+
+                    b.HasIndex("MoviesId");
+
+                    b.ToTable("FilmesPersonagens", (string)null);
+                });
+
+            modelBuilder.Entity("FilmesNaves", b =>
                 {
                     b.Property<int>("MoviesId")
                         .HasColumnType("integer");
@@ -292,59 +308,66 @@ namespace CodeOrderAPI.Migrations
 
                     b.HasIndex("StarshipsId");
 
-                    b.ToTable("FilmeNave");
+                    b.ToTable("FilmesNaves");
                 });
 
-            modelBuilder.Entity("FilmePlaneta", b =>
+            modelBuilder.Entity("FilmesPlanets", b =>
                 {
                     b.Property<int>("MoviesId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PlanetasId")
+                    b.Property<int>("PlanetsId")
                         .HasColumnType("integer");
 
-                    b.HasKey("MoviesId", "PlanetasId");
+                    b.HasKey("MoviesId", "PlanetsId");
 
-                    b.HasIndex("PlanetasId");
+                    b.HasIndex("PlanetsId");
 
-                    b.ToTable("FilmePlaneta");
+                    b.ToTable("FilmesPlanets");
                 });
 
-            modelBuilder.Entity("FilmeVeiculo", b =>
+            modelBuilder.Entity("FilmesVeiculos", b =>
                 {
                     b.Property<int>("MoviesId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("VeiculosId")
+                    b.Property<int>("VeichlesId")
                         .HasColumnType("integer");
 
-                    b.HasKey("MoviesId", "VeiculosId");
+                    b.HasKey("MoviesId", "VeichlesId");
 
-                    b.HasIndex("VeiculosId");
+                    b.HasIndex("VeichlesId");
 
-                    b.ToTable("FilmeVeiculo");
+                    b.ToTable("FilmesVeiculos");
                 });
 
             modelBuilder.Entity("CodeOrderAPI.Model.Personagem", b =>
                 {
-                    b.HasOne("CodeOrderAPI.Model.Filme", null)
-                        .WithMany("Personagens")
-                        .HasForeignKey("FilmeId");
-
-                    b.HasOne("CodeOrderAPI.Model.Planeta", "Planeta")
-                        .WithMany()
-                        .HasForeignKey("PlanetaId")
+                    b.HasOne("CodeOrderAPI.Model.Planeta", "Planet")
+                        .WithMany("Characters")
+                        .HasForeignKey("CharacterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CodeOrderAPI.Model.Planeta", null)
-                        .WithMany("Characters")
-                        .HasForeignKey("PlanetaId1");
-
-                    b.Navigation("Planeta");
+                    b.Navigation("Planet");
                 });
 
-            modelBuilder.Entity("FilmeNave", b =>
+            modelBuilder.Entity("FilmePersonagem", b =>
+                {
+                    b.HasOne("CodeOrderAPI.Model.Personagem", null)
+                        .WithMany()
+                        .HasForeignKey("CharactersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeOrderAPI.Model.Filme", null)
+                        .WithMany()
+                        .HasForeignKey("MoviesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FilmesNaves", b =>
                 {
                     b.HasOne("CodeOrderAPI.Model.Filme", null)
                         .WithMany()
@@ -359,7 +382,7 @@ namespace CodeOrderAPI.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FilmePlaneta", b =>
+            modelBuilder.Entity("FilmesPlanets", b =>
                 {
                     b.HasOne("CodeOrderAPI.Model.Filme", null)
                         .WithMany()
@@ -369,12 +392,12 @@ namespace CodeOrderAPI.Migrations
 
                     b.HasOne("CodeOrderAPI.Model.Planeta", null)
                         .WithMany()
-                        .HasForeignKey("PlanetasId")
+                        .HasForeignKey("PlanetsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FilmeVeiculo", b =>
+            modelBuilder.Entity("FilmesVeiculos", b =>
                 {
                     b.HasOne("CodeOrderAPI.Model.Filme", null)
                         .WithMany()
@@ -384,14 +407,9 @@ namespace CodeOrderAPI.Migrations
 
                     b.HasOne("CodeOrderAPI.Model.Veiculo", null)
                         .WithMany()
-                        .HasForeignKey("VeiculosId")
+                        .HasForeignKey("VeichlesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CodeOrderAPI.Model.Filme", b =>
-                {
-                    b.Navigation("Personagens");
                 });
 
             modelBuilder.Entity("CodeOrderAPI.Model.Planeta", b =>
