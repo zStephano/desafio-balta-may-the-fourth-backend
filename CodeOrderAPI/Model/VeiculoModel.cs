@@ -2,20 +2,19 @@
 {
     public class Veiculo
     {
-
         public int Id { get; set;}
-        public string Nome { get; set; }
-        public string Modelo { get; set; }
-        public string Fabricante { get; set; }
-        public int Custo { get; set; }
-        public int Comprimento { get; set; }
-        public int VelocidadeMaxima { get; set; }
-        public int Tripulacao { get; set; }
-        public int Passageiros { get; set; }
-        public string CapacidadeCarga { get; set; }
-        public string Consumiveis { get; set; }
-        public string Classe { get; set; }
-        public Filme Filme { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Model { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
+        public decimal CostInCredits { get; set; }
+        public decimal Length { get; set; }
+        public decimal MaxSpeed { get; set; }
+        public int Crew { get; set; }
+        public int Passengers { get; set; }
+        public decimal CargoCapacity { get; set; }
+        public TimeSpan Consumables { get; set; }
+        public string Class { get; set; } = string.Empty;
 
+        public List<Filme> Movies {get; set;} = new();
     }
 }

@@ -23,6 +23,7 @@ namespace CodeOrderAPI.Routes
                     ))
                     .ToArray();
                 return forecast;
+                ;
             })
             .WithName("Filme")
             .WithOpenApi();

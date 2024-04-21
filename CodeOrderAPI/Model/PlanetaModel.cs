@@ -3,17 +3,18 @@
     public class Planeta
     {
         public int Id { get; set;}
-        public string Nome { get; set;}
-        public string PeriodoRotacao { get; set;}
-        public string PeriodoOrbital { get; set;}
-        public string Diametro { get; set;}
-        public string Clima { get; set;}
-        public string Gravidade { get; set;}
-        public string Terreno { get; set;}
-        public string SuperficeAquatica { get; set;}
-        public string Populacao { get; set;}
-        public Personagem Personagem { get; set;}
-        public Filme Filme { get; set;}
-        
+        public string Nome { get; set;} = string.Empty;
+        public TimeSpan RotationPeriod { get; set;}
+        public TimeSpan OrbitalPeriod { get; set;}
+        public decimal Diameter { get; set; }
+        public string Climate { get; set; } = string.Empty;
+        public decimal Gravity { get; set; }
+        public string Terrain { get; set; } = string.Empty;
+        public int SurfaceWater { get; set; }
+        public long Population { get; set; }
+
+        public List<Personagem> Characters { get; set; } = new List<Personagem>();
+
+        public List<Filme> Movies { get; set; } = new List<Filme>();
     }
 }

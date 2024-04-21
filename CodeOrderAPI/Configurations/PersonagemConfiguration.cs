@@ -9,7 +9,13 @@ namespace CodeOrderAPI.Configurations
 
         public void Configure(EntityTypeBuilder<Personagem> builder)
         {
-    
+            builder.ToTable("Personagem");
+
+            builder.Property(x => x.HairColor).HasMaxLength(500);
+            builder.Property(x => x.SkinColor).HasMaxLength(500);
+            builder.Property(x => x.EyeColor).HasMaxLength(500);
+
+            builder.HasOne(x => x.Planeta).WithMany().HasForeignKey(x => x.PlanetaId);
         }
     }
 }

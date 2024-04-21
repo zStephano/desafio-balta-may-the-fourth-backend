@@ -8,7 +8,13 @@ namespace CodeOrderAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<Veiculo> builder)
         {
-            
+            builder.ToTable("Veiculo");
+
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Model).IsRequired().HasMaxLength(500);
+            builder.Property(x => x.Class).IsRequired().HasMaxLength(500);
+            builder.Property(x => x.Name).IsRequired().HasMaxLength(500);
+            builder.Property(x => x.Manufacturer).IsRequired().HasMaxLength(500);
         }
     }
 }

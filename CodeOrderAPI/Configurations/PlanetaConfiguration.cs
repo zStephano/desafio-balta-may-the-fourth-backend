@@ -8,7 +8,13 @@ namespace CodeOrderAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<Planeta> builder)
         {
-            
+            builder.ToTable("Planeta");
+
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Nome).HasMaxLength(500);
+            builder.Property(x => x.RotationPeriod).HasMaxLength(500);
+            builder.Property(x => x.OrbitalPeriod).HasMaxLength(500);
+            builder.Property(x => x.Terrain).HasMaxLength(500);
         }
     }
 }

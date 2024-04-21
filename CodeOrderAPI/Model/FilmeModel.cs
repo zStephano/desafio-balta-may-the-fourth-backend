@@ -4,30 +4,16 @@ namespace CodeOrderAPI.Model
     public class Filme
     {
         public int Id { get; set; }
-        public string Titulo { get; set; }
-        public int Episodio { get; set; }
-        public string TextoAbertura { get; set; }
-        public string Diretor { get; set; }
-        public string Produtor { get; set; }
-        public DateTime DataLancamento { get; set; }
-        public Personagem Personagem { get; set; }
-        public Planeta Planeta { get; set; }
-        public Veiculo Veiculo { get; set; }
-        public Nave Nave { get; set; }
-        
-        // public Filme(int id, string titulo, int episodio, string textoAbertura, string diretor, string produtor, DateTime dataLancamento, Personagem personagem, Planeta planeta, Veiculo veiculo, Nave nave)
-        // {
-        //     Id = id;
-        //     Titulo = titulo;
-        //     Episodio = episodio;
-        //     TextoAbertura = textoAbertura;
-        //     Diretor = diretor;
-        //     Produtor = produtor;
-        //     DataLancamento = dataLancamento;
-        //     Personagem = personagem;
-        //     Planeta = planeta;
-        //     Veiculo = veiculo;
-        //     Nave = nave;
-        // }
+        public string Title { get; set; }= string.Empty;
+        public int Episode { get; set; }
+        public string OpeningCrawl { get; set; }= string.Empty;
+        public string Director { get; set; } = string.Empty;
+        public string Producer { get; set; }= string.Empty;
+        public DateTime ReleaseDate { get; set; }
+
+        public List<Planeta> Planetas { get; set; } = new List<Planeta>();
+        public List<Personagem> Personagens { get; set; } = new List<Personagem>();
+        public List<Nave> Starships { get; set; } = new List<Nave>();
+        public List<Veiculo> Veiculos { get; set; } = new List<Veiculo>();
     }
 }

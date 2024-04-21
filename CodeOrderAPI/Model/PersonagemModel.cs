@@ -6,16 +6,16 @@ namespace CodeOrderAPI.Model
     {
 
         public int Id { get; set;}
-        public string Nome { get; set;}
-        public Decimal Altura { get; set;}
-        public Decimal Peso { get; set;}
-        public string CorCabelo { get; set;}
-        public string CorPele { get; set;}
-        public string CorOlhos { get; set;}
-        public  string Nascimento { get; set;}
-        public  Genero Genero { get; set;}
-        public Planeta Planeta { get; set;}
-        public Filme Filme{ get; set;}
+        public string Nome { get; set;} = string.Empty;
+        public decimal Height { get; set;}
+        public decimal Weight { get; set;}
+        public string HairColor { get; set;}= string.Empty;
+        public string SkinColor { get; set;}= string.Empty;
+        public string EyeColor { get; set;}= string.Empty;
+        public  DateTime BirthYear { get; set; }
+        public  Genero Gender { get; set; }
 
+        public int PlanetaId { get; set; }
+        public Planeta? Planeta { get; set; }
     }
 }

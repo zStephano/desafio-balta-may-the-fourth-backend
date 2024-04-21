@@ -8,7 +8,13 @@ namespace CodeOrderAPI.Configurations
     {
         public void Configure(EntityTypeBuilder<Nave> builder)
         {
-            
+            builder.ToTable("Nave");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Name).HasMaxLength(500);
+            builder.Property(x => x.Model).HasMaxLength(500);
+            builder.Property(x => x.Manufacturer).HasMaxLength(500);
         }
     }
 }
