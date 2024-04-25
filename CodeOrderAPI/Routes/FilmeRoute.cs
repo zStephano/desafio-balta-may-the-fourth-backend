@@ -108,13 +108,13 @@ namespace CodeOrderAPI.Routes
                     .FirstOrDefaultAsync(movie => movie.Id == id, cancellationToken);
 
                 if (modelFound is null)
-                    return null;
+                    return Results.NotFound();
 
                 context.Filmes.Remove(modelFound);
 
                 await context.SaveChangesAsync(cancellationToken);
 
-                return modelFound;
+                return Results.Ok(modelFound);
             });
 
         }
