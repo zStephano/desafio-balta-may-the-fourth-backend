@@ -98,6 +98,25 @@ namespace CodeOrderAPI.Routes
                     .FirstOrDefaultAsync(cancellationToken);
             });
 
+            app.MapDelete("/Filme/{id}", async (
+                [FromRoute] int id,
+                DataContext context,
+                CancellationToken cancellationToken) =>
+            {
+                var modelFound = await context
+                    .Filmes
+                    .FirstOrDefaultAsync(movie => movie.Id == id, cancellationToken);
+
+                if (modelFound is null)
+                    return null;
+
+                context.Filmes.Remove(modelFound);
+
+                await context.SaveChangesAsync(cancellationToken);
+
+                return modelFound;
+            });
+
         }
     }
 }
