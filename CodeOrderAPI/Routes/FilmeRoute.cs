@@ -95,7 +95,7 @@ namespace CodeOrderAPI.Routes
                                 })
                         })
                     .AsNoTracking()
-                    .ToListAsync(cancellationToken);
+                    .FirstOrDefaultAsync(cancellationToken);
             });
 
         }
