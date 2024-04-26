@@ -25,21 +25,21 @@ public static class FilmeRoute
                         movie.Producer,
                         movie.ReleaseDate,
                         Characters = movie.Characters.Select(character =>
-                            new 
-                            { 
+                            new
+                            {
                                 character.Id,
                                 character.Name,
                             }),
-                        Planets = movie.Planets.Select(planet => 
+                        Planets = movie.Planets.Select(planet =>
                             new
                             {
                                 planet.Id,
                                 planet.Name,
                             }),
-                        Vehicles = movie.Veichles.Select(vehicle => 
+                        Vehicles = movie.Veichles.Select(vehicle =>
                             new
                             {
-                                vehicle.Id, 
+                                vehicle.Id,
                                 vehicle.Name,
                             }),
                         Starships = movie.Starships.Select(starship =>
@@ -54,8 +54,8 @@ public static class FilmeRoute
         });
 
         app.MapGet("/Filme/{id}", (
-            [FromRoute]int id, 
-            DataContext context, 
+            [FromRoute] int id,
+            DataContext context,
             CancellationToken cancellationToken) =>
         {
             return context
@@ -128,7 +128,7 @@ public static class FilmeRoute
                 cancellationToken);
 
             if (modelAlreadyAdded is not null)
-                return Results.Conflict("Já existe filme com este nome.");
+                return Results.Conflict("Movie title already registered.");
 
             var movie = new Model.Filme
             {
@@ -164,7 +164,7 @@ public static class FilmeRoute
 
             movie.Starships.AddRange(starshipsRelationResult.Entities);
 
-            var planetsRelationResult 
+            var planetsRelationResult
                 = await GetPlanetsByIdsAsync(context, modelToAdd.PlanetsIds.ToArray(), cancellationToken);
 
             if (planetsRelationResult.ContainsIdsDidntMatch)
@@ -172,7 +172,7 @@ public static class FilmeRoute
 
             movie.Planets.AddRange(planetsRelationResult.Entities);
 
-            var transaction = 
+            var transaction =
                 await context.Database.BeginTransactionAsync(cancellationToken);
 
             var modelAddedResult = await context.Filmes.AddAsync(movie);
@@ -182,6 +182,96 @@ public static class FilmeRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Created("/Filme/{id}", modelAddedResult.Entity.Id);
+        });
+
+        app.MapPut("/Filme/{id}", async (
+            [FromRoute] int id,
+            [FromBody] MovieToUpdateViewModel modelToUpdate,
+            DataContext context,
+            CancellationToken cancellationToken) =>
+        {
+            var movie = await context.Filmes.FirstOrDefaultAsync(
+                movie => movie.Id == id,
+                cancellationToken);
+
+            if (movie is null)
+                return Results.NotFound("Movie was not found.");
+
+            var titleAlreadyAdded = (await context.Filmes.FirstOrDefaultAsync(
+                movie => movie.Title == modelToUpdate.Title,
+                cancellationToken))
+                is not null;
+
+            if (titleAlreadyAdded)
+                return Results.Conflict("Movie title already registered.");
+
+            var vehiclesRelationResult
+                = await GetVehiclesByIdsAsync(context, modelToUpdate.CharactersIdsToReplace.ToArray(), cancellationToken);
+
+            if (vehiclesRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(vehiclesRelationResult.GetErrorMessage("Vehicles"));
+
+            var charactersRelationResult
+                = await GetCharactersByIdsAsync(context, modelToUpdate.CharactersIdsToReplace.ToArray(), cancellationToken);
+
+            if (charactersRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(charactersRelationResult.GetErrorMessage("Characters"));
+
+            var starshipsRelationResult
+                = await GetStarshipsByIdsAsync(context, modelToUpdate.StarshipsIdsToReplace.ToArray(), cancellationToken);
+
+            if (starshipsRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(starshipsRelationResult.GetErrorMessage("Starships"));
+
+            var planetsRelationResult
+                = await GetPlanetsByIdsAsync(context, modelToUpdate.PlanetsIdsToReplace.ToArray(), cancellationToken);
+
+            if (planetsRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(planetsRelationResult.GetErrorMessage("Planets"));
+
+            var transaction =
+                await context.Database.BeginTransactionAsync(cancellationToken);
+
+            movie.Director = modelToUpdate.Director;
+            movie.Episode = modelToUpdate.Episode;
+            movie.OpeningCrawl = modelToUpdate.OpeningCrawl;
+            movie.Producer = modelToUpdate.Producer;
+            movie.Title = modelToUpdate.Title;
+            movie.ReleaseDate = modelToUpdate.ReleaseDate;
+
+            //
+            // Deleting every vehicle, starship, character, and planet to add after
+            //
+            await context.Filmes
+                .Where(m => m.Id == id)
+                .Select(m => m.Characters)
+                .ExecuteDeleteAsync(cancellationToken); 
+            await context.Filmes
+                .Where(m => m.Id == id)
+                .Select(m => m.Starships)
+                .ExecuteDeleteAsync(cancellationToken);
+            await context.Filmes
+                .Where(m => m.Id == id)
+                .Select(m => m.Planets)
+                .ExecuteDeleteAsync(cancellationToken); 
+            await context.Filmes
+                .Where(m => m.Id == id)
+                .Select(m => m.Veichles)
+                .ExecuteDeleteAsync(cancellationToken); 
+
+            movie.Starships.AddRange(starshipsRelationResult.Entities);
+
+            movie.Planets.AddRange(planetsRelationResult.Entities);
+
+            movie.Characters.AddRange(charactersRelationResult.Entities);
+
+            movie.Veichles.AddRange(vehiclesRelationResult.Entities);
+
+            await transaction.CommitAsync(cancellationToken);
+
+            await context.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok(id);
         });
     }
 
