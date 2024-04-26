@@ -1,7 +1,9 @@
 ﻿using CodeOrderAPI.Data;
+using CodeOrderAPI.Model;
 using CodeOrderAPI.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace CodeOrderAPI.Routes;
 
@@ -126,12 +128,9 @@ public static class FilmeRoute
                 cancellationToken);
 
             if (modelAlreadyAdded is not null)
-                return Results.BadRequest("");
+                return Results.Conflict("Já existe filme com este nome.");
 
-            var transaction = 
-                await context.Database.BeginTransactionAsync(cancellationToken);
-
-            var modelAddedResult = await context.Filmes.AddAsync(new Model.Filme
+            var movie = new Model.Filme
             {
                 Director = modelToAdd.Director,
                 Episode = modelToAdd.Episode,
@@ -139,17 +138,141 @@ public static class FilmeRoute
                 Producer = modelToAdd.Producer,
                 Title = modelToAdd.Title,
                 ReleaseDate = modelToAdd.ReleaseDate
-            });
+            };
 
-            var modelAdded = modelAddedResult.Entity;
+            var vehiclesRelationResult
+                = await GetVehiclesByIdsAsync(context, modelToAdd.CharactersIds.ToArray(), cancellationToken);
 
-            
+            if (vehiclesRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(vehiclesRelationResult.GetErrorMessage("Vehicles"));
+
+            movie.Veichles.AddRange(vehiclesRelationResult.Entities);
+
+            var charactersRelationResult
+                = await GetCharactersByIdsAsync(context, modelToAdd.CharactersIds.ToArray(), cancellationToken);
+
+            if (charactersRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(charactersRelationResult.GetErrorMessage("Characters"));
+
+            movie.Characters.AddRange(charactersRelationResult.Entities);
+
+            var starshipsRelationResult
+                = await GetStarshipsByIdsAsync(context, modelToAdd.StarshipsIds.ToArray(), cancellationToken);
+
+            if (starshipsRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(starshipsRelationResult.GetErrorMessage("Starships"));
+
+            movie.Starships.AddRange(starshipsRelationResult.Entities);
+
+            var planetsRelationResult 
+                = await GetPlanetsByIdsAsync(context, modelToAdd.PlanetsIds.ToArray(), cancellationToken);
+
+            if (planetsRelationResult.ContainsIdsDidntMatch)
+                return Results.BadRequest(planetsRelationResult.GetErrorMessage("Planets"));
+
+            movie.Planets.AddRange(planetsRelationResult.Entities);
+
+            var transaction = 
+                await context.Database.BeginTransactionAsync(cancellationToken);
+
+            var modelAddedResult = await context.Filmes.AddAsync(movie);
 
             await transaction.CommitAsync(cancellationToken);
 
             await context.SaveChangesAsync(cancellationToken);
 
-            throw new NotImplementedException();
+            return Results.Created("/Filme/{id}", modelAddedResult.Entity.Id);
         });
+    }
+
+    private static async Task<RelationResult<Personagem>> GetCharactersByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Personagem>.Empty;
+
+        var characters = await context
+            .Personagens
+            .AsNoTracking()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !characters.Any(c => c.Id == id)).ToArray(),
+            Entities: characters);
+    }
+
+    private static async Task<RelationResult<Nave>> GetStarshipsByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Nave>.Empty;
+
+        var starships = await context
+            .Naves
+            .AsNoTracking()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !starships.Any(s => s.Id == id)).ToArray(),
+            Entities: starships);
+    }
+
+    private static async Task<RelationResult<Planeta>> GetPlanetsByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Planeta>.Empty;
+
+        var planets = await context
+            .Planetas
+            .AsNoTracking()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !planets.Any(p => p.Id == id)).ToArray(),
+            Entities: planets);
+    }
+
+    private static async Task<RelationResult<Veiculo>> GetVehiclesByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Veiculo>.Empty;
+
+        var veiculos = await context
+            .Veiculos
+            .AsNoTracking()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !veiculos.Any(v => v.Id == id)).ToArray(),
+            Entities: veiculos);
+    }
+
+    private record RelationResult<TEntity>(
+        int[] IdsDidntMatch,
+        IEnumerable<TEntity> Entities)
+    {
+        public static readonly RelationResult<TEntity> Empty
+            = new(Array.Empty<int>(), Enumerable.Empty<TEntity>());
+
+        public bool ContainsIdsDidntMatch => IdsDidntMatch.Length > 0;
+
+        public string GetErrorMessage(string fieldName)
+        {
+            return $"{fieldName} ids '{string.Join(", ", IdsDidntMatch)}' did not match.";
+        }
     }
 }

@@ -8,8 +8,8 @@ public class MovieToAddViewModel
     public string Director { get; set; } = string.Empty;
     public string Producer { get; set; } = string.Empty;
     public DateTime ReleaseDate { get; set; }
-    public IEnumerable<int> Planets { get; set; } = Enumerable.Empty<int>();
-    public IEnumerable<int> Characters { get; set; } = Enumerable.Empty<int>();
-    public IEnumerable<int> Starships { get; set; } = Enumerable.Empty<int>();
-    public IEnumerable<int> Veichles { get; set; } = Enumerable.Empty<int>();
+    public IEnumerable<int> PlanetsIds { get; set; } = Enumerable.Empty<int>();
+    public IEnumerable<int> CharactersIds { get; set; } = Enumerable.Empty<int>();
+    public IEnumerable<int> StarshipsIds { get; set; } = Enumerable.Empty<int>();
+    public IEnumerable<int> VeichlesIds { get; set; } = Enumerable.Empty<int>();
 }
