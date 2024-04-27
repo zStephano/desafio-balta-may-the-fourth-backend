@@ -242,22 +242,10 @@ public static class FilmeRoute
             //
             // Deleting every vehicle, starship, character, and planet to add after
             //
-            await context.Filmes
-                .Where(m => m.Id == id)
-                .Select(m => m.Characters)
-                .ExecuteDeleteAsync(cancellationToken); 
-            await context.Filmes
-                .Where(m => m.Id == id)
-                .Select(m => m.Starships)
-                .ExecuteDeleteAsync(cancellationToken);
-            await context.Filmes
-                .Where(m => m.Id == id)
-                .Select(m => m.Planets)
-                .ExecuteDeleteAsync(cancellationToken); 
-            await context.Filmes
-                .Where(m => m.Id == id)
-                .Select(m => m.Veichles)
-                .ExecuteDeleteAsync(cancellationToken); 
+            movie.Characters.Clear();
+            movie.Starships.Clear();
+            movie.Planets.Clear();
+            movie.Veichles.Clear();
 
             movie.Starships.AddRange(starshipsRelationResult.Entities);
 
