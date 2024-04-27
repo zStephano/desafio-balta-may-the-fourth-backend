@@ -151,7 +151,7 @@ public static class FilmeRoute
             };
 
             var vehiclesRelationResult
-                = await GetVehiclesByIdsAsync(context, modelToAdd.CharactersIds.ToArray(), cancellationToken);
+                = await GetVehiclesByIdsAsync(context, modelToAdd.VeichlesIds.ToArray(), cancellationToken);
 
             if (vehiclesRelationResult.ContainsIdsDidntMatch)
                 return Results.BadRequest(vehiclesRelationResult.GetErrorMessage("Vehicles"));
@@ -207,16 +207,19 @@ public static class FilmeRoute
             if (movie is null)
                 return Results.NotFound("Movie was not found.");
 
-            var titleAlreadyAdded = (await context.Filmes.FirstOrDefaultAsync(
-                movie => movie.Title == modelToUpdate.Title,
-                cancellationToken))
-                is not null;
+            var titleAlreadyAdded = 
+                movie.Title != modelToUpdate.Title
+                 ? (await context.Filmes.FirstOrDefaultAsync(
+                 movie => movie.Title == modelToUpdate.Title,
+                    cancellationToken))
+                    is not null
+                : false;
 
             if (titleAlreadyAdded)
                 return Results.Conflict("Movie title already registered.");
 
             var vehiclesRelationResult
-                = await GetVehiclesByIdsAsync(context, modelToUpdate.CharactersIdsToReplace.ToArray(), cancellationToken);
+                = await GetVehiclesByIdsAsync(context, modelToUpdate.VeichlesIdsToReplace.ToArray(), cancellationToken);
 
             if (vehiclesRelationResult.ContainsIdsDidntMatch)
                 return Results.BadRequest(vehiclesRelationResult.GetErrorMessage("Vehicles"));
@@ -252,10 +255,10 @@ public static class FilmeRoute
             //
             // Deleting every vehicle, starship, character, and planet to add after
             //
-            movie.Characters.Clear();
-            movie.Starships.Clear();
-            movie.Planets.Clear();
-            movie.Veichles.Clear();
+            (await context.Filmes.Include(f => f.Characters).SingleAsync(f => f.Id == movie.Id)).Characters.Clear();
+            (await context.Filmes.Include(f => f.Starships).SingleAsync(f => f.Id == movie.Id)).Starships.Clear();
+            (await context.Filmes.Include(f => f.Planets).SingleAsync(f => f.Id == movie.Id)).Planets.Clear();
+            (await context.Filmes.Include(f => f.Veichles).SingleAsync(f => f.Id == movie.Id)).Veichles.Clear();
 
             movie.Starships.AddRange(starshipsRelationResult.Entities);
 
@@ -283,7 +286,6 @@ public static class FilmeRoute
 
         var characters = await context
             .Personagens
-            .AsNoTracking()
             .Where(e => ids.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
@@ -302,7 +304,6 @@ public static class FilmeRoute
 
         var starships = await context
             .Naves
-            .AsNoTracking()
             .Where(e => ids.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
@@ -321,7 +322,6 @@ public static class FilmeRoute
 
         var planets = await context
             .Planetas
-            .AsNoTracking()
             .Where(e => ids.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
@@ -340,7 +340,6 @@ public static class FilmeRoute
 
         var veiculos = await context
             .Veiculos
-            .AsNoTracking()
             .Where(e => ids.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
