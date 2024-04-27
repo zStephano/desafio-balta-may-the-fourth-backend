@@ -11,9 +11,9 @@ public static class FilmeRoute
 {
     public static void MapFilmeEndpoints(this WebApplication app)
     {
-        app.MapGet("/Filme", (DataContext context, CancellationToken cancellationToken) =>
+        app.MapGet("/Filme", async (DataContext context, CancellationToken cancellationToken) =>
         {
-            return context
+            var movies = await context
                 .Filmes
                 .Select(movie =>
                     new
@@ -51,14 +51,19 @@ public static class FilmeRoute
                     })
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
+
+            if (movies.Any())
+                return Results.Ok(movies);
+
+            return Results.NoContent();
         });
 
-        app.MapGet("/Filme/{id}", (
+        app.MapGet("/Filme/{id}", async (
             [FromRoute] int id,
             DataContext context,
             CancellationToken cancellationToken) =>
         {
-            return context
+            var movie = await context
                 .Filmes
                 .Where(movie => movie.Id == id)
                 .Select(movie =>
@@ -97,6 +102,11 @@ public static class FilmeRoute
                     })
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
+
+            if (movie is null)
+                return Results.NoContent();
+
+            return Results.Ok(movie);
         });
 
         app.MapDelete("/Filme/{id}", async (
