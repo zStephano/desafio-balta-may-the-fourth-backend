@@ -26,23 +26,23 @@ public static class NaveRoute
 
 
         /*
-         {
-            {
-                "name": "Galactic Explorer 55",
-                "model": "GX-3",
-                "manufacturer": "Interstellar Shipworks",
-                "costInCredits": 800000,
-                "length": 85,
-                "maxSpeed": 880,
-                "crew": 10,
-                "passengers": 40,
-                "cargoCapacity": 200000,
-                "hyperdriveRating": 1.5,
-                "mglt": 70,
-                "consumables": 85,
-                "class": "Explorer",
+         * JSON para TESTE de POST
+             {
+              "name": "Galactic Enterprise 1705",
+              "model": "GX-5",
+              "manufacturer": "string",
+              "costInCredits": 500200,
+              "length": 93,
+              "maxSpeed": 200500,
+              "crew": 30,
+              "passengers": 1200,
+              "cargoCapacity": 2000000,
+              "hyperdriveRating": 9,
+              "mglt": 50,
+              "consumables": 10,
+              "class": "string",
               "moviesIds": [
-                1
+                1,3
               ]
             }
                      */
@@ -77,15 +77,13 @@ public static class NaveRoute
                 Class = modelToAdd.Class
             };
 
-
-            foreach (var movieId in modelToAdd.MoviesIds.ToList())
+            var moviesRelationResult = await GetMoviesByIdsAsync(context, modelToAdd.MoviesIds.ToArray(), cancellationToken);
+            if (moviesRelationResult.ContainsIdsDidntMatch)
             {
-                var movieDb = await context.Filmes.FirstOrDefaultAsync(m => m.Id == movieId);
-                if (movieDb != null)
-                {
-                    newStarship.Movies.Add(movieDb);
-                }                
+                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movie"));
             }
+            newStarship.Movies.AddRange(moviesRelationResult.Entities);
+
             context.Naves.Add(newStarship);
             await context.SaveChangesAsync(cancellationToken);
 
@@ -107,5 +105,36 @@ public static class NaveRoute
         });
     }
 
+    private static async Task<RelationResult<Filme>> GetMoviesByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Filme>.Empty;
 
+        var filmes = await context
+            .Filmes
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !filmes.Any(v => v.Id == id)).ToArray(),
+            Entities: filmes);
+    }
+
+    private record RelationResult<TEntity>(
+        int[] IdsDidntMatch,
+        IEnumerable<TEntity> Entities)
+    {
+        public static readonly RelationResult<TEntity> Empty
+            = new(Array.Empty<int>(), Enumerable.Empty<TEntity>());
+
+        public bool ContainsIdsDidntMatch => IdsDidntMatch.Length > 0;
+
+        public string GetErrorMessage(string fieldName)
+        {
+            return $"{fieldName} ids '{string.Join(", ", IdsDidntMatch)}' did not match.";
+        }
+    }
 }
