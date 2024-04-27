@@ -1,6 +1,7 @@
 using CodeOrderAPI;
 using CodeOrderAPI.Data;
 using CodeOrderAPI.Routes;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DataContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
@@ -21,14 +23,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Resolva IMapper aqui
+var mapper = app.Services.GetService<IMapper>();
+
+// Passa a instância de IMapper para os métodos que precisam dela
 app.MapFilmeEndpoints();
 app.MapNaveEndpoints();
-app.MapPersonagemEndpoints();
+app.MapPersonagemEndpoints(mapper);  
 app.MapPlanetaEndpoints();
 app.MapVeiculoEndpoints();
 
-
 app.Run();
-
-
-
