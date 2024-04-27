@@ -14,15 +14,70 @@ public static class NaveRoute
 
         app.MapGet("/nave", async (DataContext context, CancellationToken cancellationToken) =>
         {
-            var naves = await context.Naves.AsNoTracking().ToListAsync(cancellationToken);
-            return naves.Any() ? Results.Ok(naves) : Results.NoContent();
+            var naves = await context.Naves
+                .Include(n => n.Movies)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            if (!naves.Any())
+            {
+                return Results.NoContent();
+            }
+
+            var navesDto = naves.Select(nave => new StarshipDtoModel
+            {
+                Name = nave.Name,
+                Model = nave.Model,
+                Manufacturer = nave.Manufacturer,
+                CostInCredits = nave.CostInCredits.ToString("N0"), // Formato como número com separadores
+                Length = $"{nave.Length} meters",
+                MaxSpeed = $"{nave.MaxSpeed} km/h",
+                Crew = nave.Crew,
+                Passengers = nave.Passengers,
+                CargoCapacity = $"{nave.CargoCapacity} kg",
+                HyperdriveRating = nave.HyperdriveRating,
+                Mglt = nave.Mglt,
+                Consumables = $"{(nave.Consumables.TotalDays / 30).ToString("0.##")} month",
+                Class = nave.Class,
+                Movies = nave.Movies.Select(m => new MovieDto { Id = m.Id, Title = m.Title }).ToList()
+            }).ToList();
+
+            return Results.Ok(navesDto);
         });
 
         app.MapGet("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
         {
-            var nave = await context.Naves.FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
-            return nave != null ? Results.Ok(nave) : Results.NotFound($"Nave with ID {id} not found.");
+            var nave = await context.Naves
+                .Include(n => n.Movies)
+                .FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+
+            if (nave == null)
+            {
+                return Results.NotFound($"Nave with ID {id} not found.");
+            }
+
+            // Mapeando a entidade para o DTO
+            var naveDto = new StarshipDtoModel
+            {
+                Name = nave.Name,
+                Model = nave.Model,
+                Manufacturer = nave.Manufacturer,
+                CostInCredits = nave.CostInCredits.ToString("N0"), // Formato como número com separadores
+                Length = $"{nave.Length} meters",
+                MaxSpeed = $"{nave.MaxSpeed} km/h",
+                Crew = nave.Crew,
+                Passengers = nave.Passengers,
+                CargoCapacity = $"{nave.CargoCapacity} kg",
+                HyperdriveRating = nave.HyperdriveRating,
+                Mglt = nave.Mglt,
+                Consumables = $"{(nave.Consumables.TotalDays / 30).ToString("0.##")} month",
+                Class = nave.Class,
+                Movies = nave.Movies.Select(m => new MovieDto { Id = m.Id, Title = m.Title }).ToList()
+            };
+
+            return Results.Ok(naveDto);
         });
+
 
 
         /*
@@ -73,7 +128,7 @@ public static class NaveRoute
                 CargoCapacity = modelToAdd.CargoCapacity,
                 HyperdriveRating = modelToAdd.HyperdriveRating,
                 Mglt = modelToAdd.Mglt,
-                Consumables = TimeSpan.FromDays(modelToAdd.Consumables),
+                Consumables = TimeSpan.FromDays(modelToAdd.Consumables * 30), // grava em meses
                 Class = modelToAdd.Class
             };
 
@@ -90,6 +145,47 @@ public static class NaveRoute
             return Results.Created($"/nave/{newStarship.Id}", newStarship);
         });
 
+        app.MapPut("/nave/{id}", async ([FromRoute] int id, [FromBody] StarshipToUpdateViewModel modelToUpdate, DataContext context, CancellationToken cancellationToken) =>
+        {
+            var existingNave = await context.Naves.Include(n => n.Movies).FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+            if (existingNave == null)
+            {
+                return Results.NotFound($"Nave with ID {id} not found.");
+            }
+
+            // Atualizando propriedades da nave
+            existingNave.Name = modelToUpdate.Name;
+            existingNave.Model = modelToUpdate.Model;
+            existingNave.Manufacturer = modelToUpdate.Manufacturer;
+            existingNave.CostInCredits = modelToUpdate.CostInCredits;
+            existingNave.Length = modelToUpdate.Length;
+            existingNave.MaxSpeed = modelToUpdate.MaxSpeed;
+            existingNave.Crew = modelToUpdate.Crew;
+            existingNave.Passengers = modelToUpdate.Passengers;
+            existingNave.CargoCapacity = modelToUpdate.CargoCapacity;
+            existingNave.HyperdriveRating = modelToUpdate.HyperdriveRating;
+            existingNave.Mglt = modelToUpdate.Mglt;
+            existingNave.Consumables = TimeSpan.FromDays(modelToUpdate.Consumables);
+            existingNave.Class = modelToUpdate.Class;
+
+            // Atualizando os filmes associados à nave
+            var moviesRelationResult = await GetMoviesByIdsAsync(context, modelToUpdate.MoviesIds.ToArray(), cancellationToken);
+            if (moviesRelationResult.ContainsIdsDidntMatch)
+            {
+                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movie"));
+            }
+
+            // Limpar lista existente e adicionar novos
+            existingNave.Movies.Clear();
+            existingNave.Movies.AddRange(moviesRelationResult.Entities);
+
+            // Salvando alterações
+            context.Naves.Update(existingNave);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok($"Nave with ID {id} updated.");
+        });
+
 
         app.MapDelete("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
         {
@@ -104,6 +200,8 @@ public static class NaveRoute
             return Results.Ok($"Nave with ID {id} deleted.");
         });
     }
+
+
 
     private static async Task<RelationResult<Filme>> GetMoviesByIdsAsync(
         DataContext context,
