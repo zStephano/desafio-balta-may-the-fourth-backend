@@ -16,6 +16,7 @@ builder.Services.AddSwaggerGen(c =>
     c.UseInlineDefinitionsForEnums();
 });
 
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
     options => options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
