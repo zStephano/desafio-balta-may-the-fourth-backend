@@ -29,6 +29,3 @@ app.MapVeiculoEndpoints();
 
 
 app.Run();
-
-
-
