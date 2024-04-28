@@ -29,7 +29,7 @@ var mapper = app.Services.GetService<IMapper>();
 // Passa a instância de IMapper para os métodos que precisam dela
 app.MapFilmeEndpoints();
 app.MapNaveEndpoints();
-app.MapPersonagemEndpoints(mapper);  
+app.MapPersonagemEndpoints(mapper);
 app.MapPlanetaEndpoints();
 app.MapVeiculoEndpoints();
 
