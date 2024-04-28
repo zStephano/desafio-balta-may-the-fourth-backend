@@ -1,7 +1,6 @@
 using CodeOrderAPI;
 using CodeOrderAPI.Data;
 using CodeOrderAPI.Routes;
-using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,11 +21,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Passa a instância de IMapper para os métodos que precisam dela
 app.MapFilmeEndpoints();
 app.MapNaveEndpoints();
 app.MapPersonagemEndpoints();
 app.MapPlanetaEndpoints();
 app.MapVeiculoEndpoints();
+
 
 app.Run();
