@@ -9,10 +9,14 @@ namespace CodeOrderAPI
 {
     public static class PersonagemRoute
     {
-        public static void MapPersonagemEndpoints(this WebApplication app, IMapper mapper)
+        public static void MapPersonagemEndpoints(this WebApplication app)
         {
             // Endpoint para adicionar um novo Personagem
-            app.MapPost("/Personagem", async (DataContext context, PersonagemToAddViewModel personagemToAdd, CancellationToken cancellationToken) =>
+            app.MapPost("/Personagem", async (
+                DataContext context, 
+                PersonagemToAddViewModel personagemToAdd,
+                [FromServices]IMapper mapper,
+                CancellationToken cancellationToken) =>
            {
                var personagem = mapper.Map<Personagem>(personagemToAdd);
                context.Personagens.Add(personagem);
@@ -29,7 +33,7 @@ namespace CodeOrderAPI
            });
 
             // Endpoint para listar todos os Personagens
-            app.MapGet("/Personagem", async (DataContext context, CancellationToken cancellationToken) =>
+            app.MapGet("/Personagem", async (DataContext context, [FromServices] IMapper mapper, CancellationToken cancellationToken) =>
             {
                 var personagens = await context.Personagens
                     .Include(p => p.Planet.Id)
@@ -42,7 +46,7 @@ namespace CodeOrderAPI
 
 
             // Endpoint para buscar um Personagem por ID
-            app.MapGet("/Personagem/{id}", async (DataContext context, int id, CancellationToken cancellationToken) =>
+            app.MapGet("/Personagem/{id}", async (DataContext context, int id, [FromServices] IMapper mapper, CancellationToken cancellationToken) =>
               {
                   var personagem = await context.Personagens
                       .Include(p => p.Planet.Id)
@@ -57,7 +61,12 @@ namespace CodeOrderAPI
 
 
             // Endpoint para atualizar um Personagem
-            app.MapPut("/Personagem/{id}", async (DataContext context, [FromRoute] int id, [FromBody] PersonagemToUpdateViewModel updatedPersonagemViewModel, CancellationToken cancellationToken) =>
+            app.MapPut("/Personagem/{id}", async (
+                DataContext context, 
+                [FromRoute] int id, 
+                [FromBody] PersonagemToUpdateViewModel updatedPersonagemViewModel,
+                [FromServices] IMapper mapper,
+                CancellationToken cancellationToken) =>
             {
                 var personagem = await context.Personagens
                     .Include(p => p.Planet.Id) 

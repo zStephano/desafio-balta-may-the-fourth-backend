@@ -10,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DataContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
@@ -23,13 +22,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Resolva IMapper aqui
-var mapper = app.Services.GetService<IMapper>();
-
 // Passa a instância de IMapper para os métodos que precisam dela
 app.MapFilmeEndpoints();
 app.MapNaveEndpoints();
-app.MapPersonagemEndpoints(mapper);
+app.MapPersonagemEndpoints();
 app.MapPlanetaEndpoints();
 app.MapVeiculoEndpoints();
 
