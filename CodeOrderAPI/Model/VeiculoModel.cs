@@ -1,4 +1,6 @@
-﻿namespace CodeOrderAPI.Model
+﻿using System.Text.Json.Serialization;
+
+namespace CodeOrderAPI.Model
 {
     public class Veiculo
     {
@@ -15,6 +17,7 @@
         public TimeSpan Consumables { get; set; }
         public string Class { get; set; } = string.Empty;
 
+        [JsonIgnore]
         public List<Filme> Movies {get; set;} = new();
     }
 }
