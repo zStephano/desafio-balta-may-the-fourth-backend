@@ -1,10 +1,7 @@
-﻿using System.Text.Json.Serialization;
-
-namespace CodeOrderAPI.Model
+﻿namespace CodeOrderAPI.ViewModels
 {
-    public class Veiculo
+    public class VehicleViewModel
     {
-        public int Id { get; set;}
         public string Name { get; set; } = string.Empty;
         public string Model { get; set; } = string.Empty;
         public string Manufacturer { get; set; } = string.Empty;
@@ -14,10 +11,9 @@ namespace CodeOrderAPI.Model
         public int Crew { get; set; }
         public int Passengers { get; set; }
         public decimal CargoCapacity { get; set; }
-        public TimeSpan Consumables { get; set; }
+        public double Consumables { get; set; }
         public string Class { get; set; } = string.Empty;
+        public IEnumerable<int> Movies { get; set; } = Enumerable.Empty<int>();
 
-        [JsonIgnore]
-        public List<Filme> Movies {get; set;} = new();
     }
 }
