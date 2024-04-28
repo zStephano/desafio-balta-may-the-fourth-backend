@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CodeOrderAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240421221028_InitialMigration")]
+    [Migration("20240428182139_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -136,9 +136,6 @@ namespace CodeOrderAPI.Migrations
                     b.Property<DateTime>("BirthYear")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("EyeColor")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -173,7 +170,7 @@ namespace CodeOrderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CharacterId");
+                    b.HasIndex("PlanetId");
 
                     b.ToTable("Personagem", (string)null);
                 });
@@ -348,7 +345,7 @@ namespace CodeOrderAPI.Migrations
                 {
                     b.HasOne("CodeOrderAPI.Model.Planeta", "Planet")
                         .WithMany("Characters")
-                        .HasForeignKey("CharacterId")
+                        .HasForeignKey("PlanetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

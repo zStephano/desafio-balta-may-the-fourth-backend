@@ -161,15 +161,14 @@ namespace CodeOrderAPI.Migrations
                     EyeColor = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     BirthYear = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Gender = table.Column<int>(type: "integer", nullable: false),
-                    CharacterId = table.Column<int>(type: "integer", nullable: false),
                     PlanetId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Personagem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Personagem_Planeta_CharacterId",
-                        column: x => x.CharacterId,
+                        name: "FK_Personagem_Planeta_PlanetId",
+                        column: x => x.PlanetId,
                         principalTable: "Planeta",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -244,9 +243,9 @@ namespace CodeOrderAPI.Migrations
                 column: "VeichlesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Personagem_CharacterId",
+                name: "IX_Personagem_PlanetId",
                 table: "Personagem",
-                column: "CharacterId");
+                column: "PlanetId");
         }
 
         /// <inheritdoc />
