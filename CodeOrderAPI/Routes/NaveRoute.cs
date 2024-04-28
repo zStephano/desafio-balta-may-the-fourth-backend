@@ -1,30 +1,238 @@
-﻿using CodeOrderAPI.Model;
+﻿using CodeOrderAPI.Data;
+using CodeOrderAPI.Model;
+using CodeOrderAPI.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
-namespace CodeOrderAPI
+namespace CodeOrderAPI.Routes;
+
+public static class NaveRoute
 {
-    public static class NaveRoute
+    public static void MapNaveEndpoints(this WebApplication app)
     {
-        public static void MapNaveEndpoints(this WebApplication app)
+
+        app.MapGet("/nave", async (DataContext context, CancellationToken cancellationToken) =>
         {
-            var summaries = new[]
+            var naves = await context.Naves
+                .Include(n => n.Movies)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            if (!naves.Any())
             {
-                "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+                return Results.NoContent();
+            }
+
+            var navesDto = naves.Select(nave => new StarshipDtoModel
+            {
+                Name = nave.Name,
+                Model = nave.Model,
+                Manufacturer = nave.Manufacturer,
+                CostInCredits = nave.CostInCredits.ToString("N0"), // Formato como número com separadores
+                Length = $"{nave.Length} meters",
+                MaxSpeed = $"{nave.MaxSpeed} km/h",
+                Crew = nave.Crew,
+                Passengers = nave.Passengers,
+                CargoCapacity = $"{nave.CargoCapacity} kg",
+                HyperdriveRating = nave.HyperdriveRating,
+                Mglt = nave.Mglt,
+                Consumables = $"{(nave.Consumables.TotalDays / 30).ToString("0.##")} month",
+                Class = nave.Class,
+                Movies = nave.Movies.Select(m => new MovieDto { Id = m.Id, Title = m.Title }).ToList()
+            }).ToList();
+
+            return Results.Ok(navesDto);
+        });
+
+        app.MapGet("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
+        {
+            var nave = await context.Naves
+                .Include(n => n.Movies)
+                .FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+
+            if (nave == null)
+            {
+                return Results.NotFound($"Nave with ID {id} not found.");
+            }
+
+            // Mapeando a entidade para o DTO
+            var naveDto = new StarshipDtoModel
+            {
+                Name = nave.Name,
+                Model = nave.Model,
+                Manufacturer = nave.Manufacturer,
+                CostInCredits = nave.CostInCredits.ToString("N0"), // Formato como número com separadores
+                Length = $"{nave.Length} meters",
+                MaxSpeed = $"{nave.MaxSpeed} km/h",
+                Crew = nave.Crew,
+                Passengers = nave.Passengers,
+                CargoCapacity = $"{nave.CargoCapacity} kg",
+                HyperdriveRating = nave.HyperdriveRating,
+                Mglt = nave.Mglt,
+                Consumables = $"{(nave.Consumables.TotalDays / 30).ToString("0.##")} month",
+                Class = nave.Class,
+                Movies = nave.Movies.Select(m => new MovieDto { Id = m.Id, Title = m.Title }).ToList()
             };
 
-            app.MapGet("/Nave", () =>
+            return Results.Ok(naveDto);
+        });
+
+
+
+        /*
+         * JSON para TESTE de POST
+             {
+              "name": "Galactic Enterprise 1705",
+              "model": "GX-5",
+              "manufacturer": "string",
+              "costInCredits": 500200,
+              "length": 93,
+              "maxSpeed": 200500,
+              "crew": 30,
+              "passengers": 1200,
+              "cargoCapacity": 2000000,
+              "hyperdriveRating": 9,
+              "mglt": 50,
+              "consumables": 10,
+              "class": "string",
+              "moviesIds": [
+                1,3
+              ]
+            }
+                     */
+
+
+        app.MapPost("/nave", async (
+            [FromBody] StarshipToAddViewModel modelToAdd,
+            DataContext context,
+            CancellationToken cancellationToken) =>
+        {
+            // Não pode ter naves com o mesmo nome (???)
+            bool modelAlreadyAdded = await context.Naves
+                .AnyAsync(n => n.Name == modelToAdd.Name, cancellationToken);
+
+            if (modelAlreadyAdded)
+                return Results.Conflict("Starship title already registered.");
+
+            var newStarship = new Nave
             {
-                var forecast = Enumerable.Range(1, 5).Select(index =>
-                    new WeatherForecast
-                    (
-                        DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        Random.Shared.Next(-20, 55),
-                        summaries[Random.Shared.Next(summaries.Length)]
-                    ))
-                    .ToArray();
-                return forecast;
-            })
-            .WithName("Nave")
-            .WithOpenApi();
+                Name = modelToAdd.Name,
+                Model = modelToAdd.Model,
+                Manufacturer = modelToAdd.Manufacturer,
+                CostInCredits = modelToAdd.CostInCredits,
+                Length = modelToAdd.Length,
+                MaxSpeed = modelToAdd.MaxSpeed,
+                Crew = modelToAdd.Crew,
+                Passengers = modelToAdd.Passengers,
+                CargoCapacity = modelToAdd.CargoCapacity,
+                HyperdriveRating = modelToAdd.HyperdriveRating,
+                Mglt = modelToAdd.Mglt,
+                Consumables = TimeSpan.FromDays(modelToAdd.Consumables * 30), // grava em meses
+                Class = modelToAdd.Class
+            };
+
+            var moviesRelationResult = await GetMoviesByIdsAsync(context, modelToAdd.MoviesIds.ToArray(), cancellationToken);
+            if (moviesRelationResult.ContainsIdsDidntMatch)
+            {
+                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movie"));
+            }
+            newStarship.Movies.AddRange(moviesRelationResult.Entities);
+
+            context.Naves.Add(newStarship);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return Results.Created($"/nave/{newStarship.Id}", newStarship);
+        });
+
+        app.MapPut("/nave/{id}", async ([FromRoute] int id, [FromBody] StarshipToUpdateViewModel modelToUpdate, DataContext context, CancellationToken cancellationToken) =>
+        {
+            var existingNave = await context.Naves.Include(n => n.Movies).FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+            if (existingNave == null)
+            {
+                return Results.NotFound($"Nave with ID {id} not found.");
+            }
+
+            // Atualizando propriedades da nave
+            existingNave.Name = modelToUpdate.Name;
+            existingNave.Model = modelToUpdate.Model;
+            existingNave.Manufacturer = modelToUpdate.Manufacturer;
+            existingNave.CostInCredits = modelToUpdate.CostInCredits;
+            existingNave.Length = modelToUpdate.Length;
+            existingNave.MaxSpeed = modelToUpdate.MaxSpeed;
+            existingNave.Crew = modelToUpdate.Crew;
+            existingNave.Passengers = modelToUpdate.Passengers;
+            existingNave.CargoCapacity = modelToUpdate.CargoCapacity;
+            existingNave.HyperdriveRating = modelToUpdate.HyperdriveRating;
+            existingNave.Mglt = modelToUpdate.Mglt;
+            existingNave.Consumables = TimeSpan.FromDays(modelToUpdate.Consumables);
+            existingNave.Class = modelToUpdate.Class;
+
+            // Atualizando os filmes associados à nave
+            var moviesRelationResult = await GetMoviesByIdsAsync(context, modelToUpdate.MoviesIds.ToArray(), cancellationToken);
+            if (moviesRelationResult.ContainsIdsDidntMatch)
+            {
+                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movie"));
+            }
+
+            // Limpar lista existente e adicionar novos
+            existingNave.Movies.Clear();
+            existingNave.Movies.AddRange(moviesRelationResult.Entities);
+
+            // Salvando alterações
+            context.Naves.Update(existingNave);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return Results.Ok($"Nave with ID {id} updated.");
+        });
+
+
+        app.MapDelete("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
+        {
+            var nave = await context.Naves.FirstOrDefaultAsync(n => n.Id == id, cancellationToken);
+            if (nave == null)
+            {
+                return Results.NotFound($"Nave with ID {id} not found.");
+            }
+
+            context.Naves.Remove(nave);
+            await context.SaveChangesAsync(cancellationToken);
+            return Results.Ok($"Nave with ID {id} deleted.");
+        });
+    }
+
+
+
+    private static async Task<RelationResult<Filme>> GetMoviesByIdsAsync(
+        DataContext context,
+        int[] ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return RelationResult<Filme>.Empty;
+
+        var filmes = await context
+            .Filmes
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        return new(
+            IdsDidntMatch: ids.Where(id => !filmes.Any(v => v.Id == id)).ToArray(),
+            Entities: filmes);
+    }
+
+    private record RelationResult<TEntity>(
+        int[] IdsDidntMatch,
+        IEnumerable<TEntity> Entities)
+    {
+        public static readonly RelationResult<TEntity> Empty
+            = new(Array.Empty<int>(), Enumerable.Empty<TEntity>());
+
+        public bool ContainsIdsDidntMatch => IdsDidntMatch.Length > 0;
+
+        public string GetErrorMessage(string fieldName)
+        {
+            return $"{fieldName} ids '{string.Join(", ", IdsDidntMatch)}' did not match.";
         }
     }
 }
