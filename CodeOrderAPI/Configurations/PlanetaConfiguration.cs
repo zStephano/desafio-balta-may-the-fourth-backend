@@ -21,7 +21,7 @@ namespace CodeOrderAPI.Configurations
             builder.Property(x => x.SurfaceWater).HasMaxLength(500);
             builder.Property(x => x.Population).HasMaxLength(500);
 
-            builder.HasMany(x => x.Characters).WithOne(c => c.Planet).HasForeignKey("CharacterId");
+            builder.HasMany(x => x.Characters).WithOne(c => c.Planet);
             builder.HasMany(x => x.Movies).WithMany(c => c.Planets).UsingEntity("FilmesPlanets");
         }
     }
