@@ -31,7 +31,17 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 * Muito conhecimento técnico
 
 ## 🧪 Como testar o projeto
-[DESCREVER COMO EXECUTAR O PROJETO]
+
+O projeto pode ser acessado através de meios on-line, ou também ele pode rodar localmente.
+
+### Publicação WEB
+O projeto pode ser acessado através do endereço: [swagger](https://codeorder66.azurewebsites.net/swagger/index.html)
+
+### Como rodar localmente
+
+- BD
+- Database update
+- Run
 
 # 💜 Participe
 Quer participar dos próximos desafios? Junte-se a [maior comunidade .NET do Brasil 🇧🇷 💜](https://balta.io/discord)
