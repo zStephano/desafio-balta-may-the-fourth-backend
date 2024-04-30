@@ -20,11 +20,11 @@ namespace CodeOrderAPI
            {
                var personagem = mapper.Map<Personagem>(personagemToAdd);
 
-               Planeta? planetToRelate = null;
-
-               if (personagemToAdd.PlanetId is not null)
-                   planetToRelate =
+               Planeta? planetToRelate =
                        await context.Planetas.FirstOrDefaultAsync(p => p.Id == personagemToAdd.PlanetId, cancellationToken);
+
+               if (planetToRelate is null)
+                   return Results.BadRequest($"Planet {personagemToAdd.PlanetId} was not found.");
 
                var moviesMatched =
                     await context.Filmes
@@ -95,11 +95,11 @@ namespace CodeOrderAPI
 
                 if (personagem == null) return Results.NotFound("Character was not found");
 
-                Planeta? planetToRelate = null;
-
-                if (updatedPersonagem.PlanetId is not null)
-                    planetToRelate =
+                Planeta? planetToRelate =
                         await context.Planetas.FirstOrDefaultAsync(p => p.Id == updatedPersonagem.PlanetId, cancellationToken);
+
+                if (planetToRelate is null)
+                    return Results.BadRequest($"Planet {updatedPersonagem.PlanetId} was not found.");
 
                 using var transaction =
                     await context.Database.BeginTransactionAsync(cancellationToken);
