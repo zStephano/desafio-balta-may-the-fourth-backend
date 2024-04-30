@@ -1,273 +1,169 @@
-﻿using CodeOrderAPI.Data;
+﻿using AutoMapper;
+using CodeOrderAPI.Data;
 using CodeOrderAPI.Model;
 using CodeOrderAPI.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Xml.Linq;
 
-namespace CodeOrderAPI.Routes;
-
-public static class PersonagemRoute
+namespace CodeOrderAPI
 {
-    public static void MapPersonagemEndpoints(this WebApplication app)
+    public static class PersonagemRoute
     {
-        app.MapGet("/Personagem", async (DataContext context, CancellationToken cancellationToken) =>
+        public static void MapPersonagemEndpoints(this WebApplication app)
         {
-            var planet = await context
-                .Personagens
-                .Select(character =>
-                    new
-                    {
-                        character.Id,
-                        character.Name,
-                        character.Height,
-                        character.Weight,
-                        character.HairColor,
-                        character.SkinColor,
-                        character.EyeColor,
-                        character.BirthYear,
-                        character.Gender,
-                        character.Planet,
-                        Movies = character.Movies.Select(movie =>
-                            new
-                            {
-                                movie.Id,
-                                movie.Title,
-                                movie.Episode,
-                            }),
-                    })
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            // Endpoint para adicionar um novo Personagem
+            app.MapPost("/Personagem", async (
+                DataContext context,
+                CharacterToAddViewModel personagemToAdd,
+                [FromServices] IMapper mapper,
+                CancellationToken cancellationToken) =>
+           {
+               var personagem = mapper.Map<Personagem>(personagemToAdd);
 
-            if (planet.Any())
-                return Results.Ok(planet);
+               Planeta? planetToRelate =
+                       await context.Planetas.FirstOrDefaultAsync(p => p.Id == personagemToAdd.PlanetId, cancellationToken);
 
-            return Results.NoContent();
-        });
+               if (planetToRelate is null)
+                   return Results.BadRequest($"Planet {personagemToAdd.PlanetId} was not found.");
 
-        app.MapGet("/Personagem/{id}", async (
-            [FromRoute] int id,
-            DataContext context,
-            CancellationToken cancellationToken) =>
-        {
-            var character = await context
-                .Personagens
-                .Where(character => character.Id == id)
-                .Select(character =>
-                    new
-                    {
-                        character.Id,
-                        character.Name,
-                        character.Height,
-                        character.Weight,
-                        character.HairColor,
-                        character.SkinColor,
-                        character.EyeColor,
-                        character.BirthYear,
-                        character.Gender,
-                        character.Planet,
-                        Movies = character.Movies.Select(movie =>
-                            new
-                            {
-                                movie.Id,
-                                movie.Title,
-                                movie.Episode,
-                            }),
-                    })
-                .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+               var moviesMatched =
+                    await context.Filmes
+                    .Where(movie => personagemToAdd.MoviesIds.Contains(movie.Id))
+                    .ToListAsync(cancellationToken);
 
-            if (character is null)
-                return Results.NoContent();
+               using var transaction
+                    = await context.Database.BeginTransactionAsync(cancellationToken);
 
-            return Results.Ok(character);
-        });
+               personagem.Movies.AddRange(moviesMatched);
 
-        app.MapDelete("/Personagem/{id}", async (
-            [FromRoute] int id,
-            DataContext context,
-            CancellationToken cancellationToken) =>
-        {
-            var modelFound = await context
-                .Personagens
-                .FirstOrDefaultAsync(character => character.Id == id, cancellationToken);
+               context.Personagens.Add(personagem);
 
-            if (modelFound is null)
-                return Results.NotFound();
+               await transaction.CommitAsync();
 
-            context.Personagens.Remove(modelFound);
+               await context.SaveChangesAsync();
 
-            await context.SaveChangesAsync(cancellationToken);
+               // Carrega os relacionamentos necessários antes de mapear para DTO
+               var carregaPersonagem = await context.Personagens
+                   .Include(p => p.Planet)
+                   .Include(p => p.Movies)
+                   .FirstOrDefaultAsync(p => p.Id == personagem.Id, cancellationToken);
 
-            return Results.Ok(modelFound);
-        });
+               var resultDto = mapper.Map<PersonagemDTO>(carregaPersonagem);
+               return Results.Created($"/Personagem/{personagem.Id}", resultDto);
+           });
 
-        app.MapPost("/Personagem", async (
-            [FromBody] CharacterToAddViewModel modelToAdd,
-            DataContext context,
-            CancellationToken cancellationToken) =>
-        {
-            var modelAlreadyAdded = await context.Personagens.FirstOrDefaultAsync(
-                character => character.Name == modelToAdd.Name,
-                cancellationToken);
-
-            if (modelAlreadyAdded is not null)
-                return Results.Conflict("character name already registered.");
-
-            var planetRelationResult
-                = await GetPlanetByIdsAsync(context, modelToAdd.PlanetId, cancellationToken);
-
-            if (planetRelationResult.ContainsIdsDidntMatch)
-                return Results.BadRequest(planetRelationResult.GetErrorMessage("planet"));
-
-            var character = new Personagem
+            // Endpoint para listar todos os Personagens
+            app.MapGet("/Personagem", async (DataContext context, [FromServices] IMapper mapper, CancellationToken cancellationToken) =>
             {
-                Name = modelToAdd.Name,
-                Height = modelToAdd.Height,
-                Weight = modelToAdd.Weight,
-                HairColor = modelToAdd.HairColor,
-                SkinColor = modelToAdd.SkinColor,
-                EyeColor = modelToAdd.EyeColor,
-                BirthYear = modelToAdd.BirthYear,
-                Gender = modelToAdd.Gender,
-                Planet = (Planeta)planetRelationResult.Entities,
-            };
+                var personagens = await context.Personagens
+                    .Include(p => p.Planet)
+                    .Include(p => p.Movies)
+                    .ToListAsync(cancellationToken);
 
-            var moviesRelationResult
-                = await GetMoviesByIdsAsync(context, modelToAdd.MoviesIds.ToArray(), cancellationToken);
-
-            if (moviesRelationResult.ContainsIdsDidntMatch)
-                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movies"));
-
-            //character.Planet.AddRange(planetRelationResult.Entities);
-
-            var transaction =
-                await context.Database.BeginTransactionAsync(cancellationToken);
-
-            var modelAddedResult = await context.Personagens.AddAsync(character);
-
-            await transaction.CommitAsync(cancellationToken);
-
-            await context.SaveChangesAsync(cancellationToken);
-
-            return Results.Created("/Personagem/{id}", modelAddedResult.Entity.Id);
-        });
-
-        app.MapPut("/Personagem/{id}", async (
-            [FromRoute] int id,
-            [FromBody] CharacterToUpdateViewModel modelToUpdate,
-            DataContext context,
-            CancellationToken cancellationToken) =>
-        {
-            var character = await context.Personagens.FirstOrDefaultAsync(
-                character => character.Id == id,
-                cancellationToken);
-
-            if (character is null)
-                return Results.NotFound("character was not found.");
-
-            var nameAlreadyAdded =
-                character.Name != modelToUpdate.Name
-                 ? (await context.Personagens.FirstOrDefaultAsync(
-                 character => character.Name == modelToUpdate.Name,
-                    cancellationToken))
-                    is not null
-                : false;
-
-            if (nameAlreadyAdded)
-                return Results.Conflict("character title already registered.");
-
-            var planetRelationResult
-                = await GetPlanetByIdsAsync(context, modelToUpdate.PlanetIdToReplace.ToArray(), cancellationToken);
-
-            if (planetRelationResult.ContainsIdsDidntMatch)
-                return Results.BadRequest(planetRelationResult.GetErrorMessage("planet"));
-
-            var moviesRelationResult
-                = await GetMoviesByIdsAsync(context, modelToUpdate.MoviesIdsToReplace.ToArray(), cancellationToken);
-
-            if (moviesRelationResult.ContainsIdsDidntMatch)
-                return Results.BadRequest(moviesRelationResult.GetErrorMessage("Movies"));
+                var resultDtos = mapper.Map<List<PersonagemDTO>>(personagens);
+                return Results.Ok(resultDtos);
+            });
 
 
-            var transaction =
-                await context.Database.BeginTransactionAsync(cancellationToken);
+            // Endpoint para buscar um Personagem por ID
+            app.MapGet("/Personagem/{id}", async (DataContext context, int id, [FromServices] IMapper mapper, CancellationToken cancellationToken) =>
+              {
+                  var personagem = await context.Personagens
+                      .Include(p => p.Planet)
+                      .Include(p => p.Movies)
+                      .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-            character.Name = modelToUpdate.Name;
-            character.Height = modelToUpdate.Height;
-            character.Weight = modelToUpdate.Weight;
-            character.HairColor = modelToUpdate.HairColor;
-            character.SkinColor = modelToUpdate.SkinColor;
-            character.EyeColor = modelToUpdate.EyeColor;
-            character.BirthYear = modelToUpdate.BirthYear;
-            character.Gender = modelToUpdate.Gender;
-            character.Planet = (Planeta)moviesRelationResult.Entities;
+                  if (personagem == null) return Results.NotFound();
 
-            //
-            // Deleting every character and movie to add after
-            //
-            (await context.Personagens.Include(f => f.Movies).SingleAsync(f => f.Id == character.Id)).Movies.Clear();
+                  var resultDto = mapper.Map<PersonagemDTO>(personagem);
+                  return Results.Ok(resultDto);
+              });
 
-            character.Movies.AddRange(moviesRelationResult.Entities);
 
-            await transaction.CommitAsync(cancellationToken);
+            // Endpoint para atualizar um Personagem
+            app.MapPut("/Personagem/{id}", async (
+                DataContext context,
+                [FromRoute] int id,
+                [FromBody] CharacterToUpdateViewModel updatedPersonagem,
+                [FromServices] IMapper mapper,
+                CancellationToken cancellationToken) =>
+            {
+                var personagem = await context.Personagens
+                    .Include(p => p.Planet)
+                    .Include(p => p.Movies)
+                    .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-            await context.SaveChangesAsync(cancellationToken);
+                if (personagem == null) return Results.NotFound("Character was not found");
 
-            return Results.Ok(id);
-        });
-    }
+                Planeta? planetToRelate =
+                        await context.Planetas.FirstOrDefaultAsync(p => p.Id == updatedPersonagem.PlanetId, cancellationToken);
 
-    private static async Task<RelationResult<Planeta>> GetPlanetByIdsAsync(
-    DataContext context,
-    int[] ids,
-    CancellationToken cancellationToken = default)
-    {
-        if (!ids.Any())
-            return RelationResult<Planeta>.Empty;
+                if (planetToRelate is null)
+                    return Results.BadRequest($"Planet {updatedPersonagem.PlanetId} was not found.");
 
-        var planet = await context
-            .Planetas
-            .Where(e => ids.Contains(e.Id))
-            .ToListAsync(cancellationToken);
+                using var transaction =
+                    await context.Database.BeginTransactionAsync(cancellationToken);
 
-        return new(
-            IdsDidntMatch: ids.Where(id => !planet.Any(c => c.Id == id)).ToArray(),
-            Entities: planet);
-    }
+                // Atualizar lista de Filme view
+                if (updatedPersonagem.MoviesIdsToReplace != null)
+                {
+                    var currentMovieIds = personagem.Movies.Select(m => m.Id).ToList();
+                    var newMovieIds = updatedPersonagem.MoviesIdsToReplace.Except(currentMovieIds).ToList();
+                    var removedMovieIds = currentMovieIds.Except(updatedPersonagem.MoviesIdsToReplace).ToList();
 
-    private static async Task<RelationResult<Filme>> GetMoviesByIdsAsync(
-    DataContext context,
-    int[] ids,
-    CancellationToken cancellationToken = default)
-    {
-        if (!ids.Any())
-            return RelationResult<Filme>.Empty;
+                    // Remover filmes não mais associados
+                    foreach (var movieId in removedMovieIds)
+                    {
+                        var filmesParaRemover = personagem.Movies.FirstOrDefault(m => m.Id == movieId);
+                        if (filmesParaRemover != null)
+                        {
+                            personagem.Movies.Remove(filmesParaRemover);
+                        }
+                    }
 
-        var movies = await context
-            .Filmes
-            .Where(e => ids.Contains(e.Id))
-            .ToListAsync(cancellationToken);
+                    // Adicionar novos filmes
+                    foreach (var movieId in newMovieIds)
+                    {
+                        var movieToAdd = await context.Filmes.FindAsync(movieId);
+                        if (movieToAdd != null)
+                        {
+                            personagem.Movies.Add(movieToAdd);
+                        }
+                    }
+                }
 
-        return new(
-            IdsDidntMatch: ids.Where(id => !movies.Any(c => c.Id == id)).ToArray(),
-            Entities: movies);
-    }
+                await transaction.CommitAsync();
+                await context.SaveChangesAsync();
 
-    private record RelationResult<TEntity>(
-        int[] IdsDidntMatch,
-        IEnumerable<TEntity> Entities)
-    {
-        public static readonly RelationResult<TEntity> Empty
-            = new(Array.Empty<int>(), Enumerable.Empty<TEntity>());
+                return Results.Ok();
+            });
 
-        public bool ContainsIdsDidntMatch => IdsDidntMatch.Length > 0;
 
-        public string GetErrorMessage(string fieldName)
-        {
-            return $"{fieldName} ids '{string.Join(", ", IdsDidntMatch)}' did not match.";
+            // Endpoint para deletar um Personagem
+            app.MapDelete("/Personagem/{id}", async (DataContext context, int id, CancellationToken cancellationToken) =>
+            {
+                var personagem = await context.Personagens
+                    .Include(p => p.Movies)  // Inclua relacionamentos que possam precisar de tratamento especial
+                    .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+
+                if (personagem == null) return Results.NotFound("Character not found.");
+
+                // Exemplo de tratamento de relação antes de deletar
+                if (personagem.Movies.Any())
+                {
+                    // Opção 1: Remover relação (desvincular filmes do personagem)
+                    personagem.Movies.Clear();
+                    // Opção 2: Deletar também os filmes relacionados (se aplicável)
+                    context.Filmes.RemoveRange(personagem.Movies);
+                }
+
+                context.Personagens.Remove(personagem);
+                await context.SaveChangesAsync(cancellationToken);
+                return Results.Ok();
+            });
+
         }
     }
 }
+
+
