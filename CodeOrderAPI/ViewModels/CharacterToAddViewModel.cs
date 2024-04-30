@@ -12,6 +12,6 @@ public class CharacterToAddViewModel
     public string EyeColor { get; set; } = string.Empty;
     public DateTime BirthYear { get; set; }
     public Genero Gender { get; set; }
-    public int[]? PlanetId { get; set; }
+    public int? PlanetId { get; set; }
     public IEnumerable<int> MoviesIds { get; set; } = Enumerable.Empty<int>();
 }

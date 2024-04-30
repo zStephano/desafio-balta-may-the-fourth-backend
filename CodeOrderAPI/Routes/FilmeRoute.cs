@@ -18,6 +18,7 @@ public static class FilmeRoute
                 .Select(movie =>
                     new
                     {
+                        movie.Id,
                         movie.Title,
                         movie.Episode,
                         movie.OpeningCrawl,
@@ -69,6 +70,7 @@ public static class FilmeRoute
                 .Select(movie =>
                     new
                     {
+                        movie.Id,
                         movie.Title,
                         movie.Episode,
                         movie.OpeningCrawl,

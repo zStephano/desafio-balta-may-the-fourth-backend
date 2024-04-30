@@ -14,7 +14,7 @@ namespace CodeOrderAPI.Model
         public string EyeColor { get; set;}= string.Empty;
         public  DateTime BirthYear { get; set; }
         public  Genero Gender { get; set; }
-        public Planeta? Planet { get; set; } = new Planeta();
+        public Planeta Planet { get; set; } = new Planeta();
         public List<Filme> Movies { get; set; } = new List<Filme>();
     }
 }
