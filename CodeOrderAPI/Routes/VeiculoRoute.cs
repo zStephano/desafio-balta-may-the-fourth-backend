@@ -50,6 +50,7 @@ public static class VeiculoRoute
 
             var vehiclesDto = vehicles.Select(vehicle => new
             {
+                id = vehicle.Id,
                 name = vehicle.Name,
                 model = vehicle.Model,
                 manufacturer = vehicle.Manufacturer,
@@ -77,6 +78,7 @@ public static class VeiculoRoute
 
             var vehiclesDto = new
             {
+                id = vehicle.Id,
                 name = vehicle.Name,
                 model = vehicle.Model,
                 manufacturer = vehicle.Manufacturer,
