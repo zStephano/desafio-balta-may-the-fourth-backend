@@ -1,4 +1,3 @@
-using CodeOrderAPI;
 using CodeOrderAPI.Data;
 using CodeOrderAPI.Routes;
 using Microsoft.OpenApi.Models;

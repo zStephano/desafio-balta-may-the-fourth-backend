@@ -43,7 +43,7 @@ public static class NaveRoute
             }).ToList();
 
             return Results.Ok(navesDto);
-        });
+        }).WithTags("Nave");
 
         app.MapGet("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
         {
@@ -76,32 +76,7 @@ public static class NaveRoute
             };
 
             return Results.Ok(naveDto);
-        });
-
-
-
-        /*
-         * JSON para TESTE de POST
-             {
-              "name": "Galactic Enterprise 1705",
-              "model": "GX-5",
-              "manufacturer": "string",
-              "costInCredits": 500200,
-              "length": 93,
-              "maxSpeed": 200500,
-              "crew": 30,
-              "passengers": 1200,
-              "cargoCapacity": 2000000,
-              "hyperdriveRating": 9,
-              "mglt": 50,
-              "consumables": 10,
-              "class": "string",
-              "moviesIds": [
-                1,3
-              ]
-            }
-                     */
-
+        }).WithTags("Nave");
 
         app.MapPost("/nave", async (
             [FromBody] StarshipToAddViewModel modelToAdd,
@@ -143,7 +118,7 @@ public static class NaveRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Created($"/nave/{newStarship.Id}", newStarship);
-        });
+        }).WithTags("Nave");
 
         app.MapPut("/nave/{id}", async ([FromRoute] int id, [FromBody] StarshipToUpdateViewModel modelToUpdate, DataContext context, CancellationToken cancellationToken) =>
         {
@@ -184,8 +159,7 @@ public static class NaveRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Ok($"Nave with ID {id} updated.");
-        });
-
+        }).WithTags("Nave");
 
         app.MapDelete("/nave/{id}", async ([FromRoute] int id, DataContext context, CancellationToken cancellationToken) =>
         {
@@ -198,7 +172,7 @@ public static class NaveRoute
             context.Naves.Remove(nave);
             await context.SaveChangesAsync(cancellationToken);
             return Results.Ok($"Nave with ID {id} deleted.");
-        });
+        }).WithTags("Nave");
     }
 
 

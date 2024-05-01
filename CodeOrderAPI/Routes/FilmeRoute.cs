@@ -57,7 +57,8 @@ public static class FilmeRoute
                 return Results.Ok(movies);
 
             return Results.NoContent();
-        });
+        })
+            .WithTags("Filme");
 
         app.MapGet("/Filme/{id}", async (
             [FromRoute] int id,
@@ -109,7 +110,7 @@ public static class FilmeRoute
                 return Results.NoContent();
 
             return Results.Ok(movie);
-        });
+        }).WithTags("Filme");
 
         app.MapDelete("/Filme/{id}", async (
             [FromRoute] int id,
@@ -128,7 +129,7 @@ public static class FilmeRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Ok(modelFound);
-        });
+        }).WithTags("Filme");
 
         app.MapPost("/Filme", async (
             [FromBody] MovieToAddViewModel modelToAdd,
@@ -194,7 +195,7 @@ public static class FilmeRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Created("/Filme/{id}", modelAddedResult.Entity.Id);
-        });
+        }).WithTags("Filme");
 
         app.MapPut("/Filme/{id}", async (
             [FromRoute] int id,
@@ -275,7 +276,7 @@ public static class FilmeRoute
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Ok(id);
-        });
+        }).WithTags("Filme");
     }
 
     private static async Task<RelationResult<Personagem>> GetCharactersByIdsAsync(

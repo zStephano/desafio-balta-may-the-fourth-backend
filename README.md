@@ -31,7 +31,56 @@ Desenvolvimento de uma API completa, fornecendo recursos como criação, leitura
 * Muito conhecimento técnico
 
 ## 🧪 Como testar o projeto
-[DESCREVER COMO EXECUTAR O PROJETO]
+
+O projeto pode ser acessado através de meios on-line, ou também ele pode rodar localmente.
+
+### Publicação WEB
+O projeto pode ser acessado através do endereço: [swagger](https://codeorder66.azurewebsites.net/swagger/index.html)
+
+### Como rodar localmente
+
+Nessa seção sera mostrado o passo a passo de como rodar localmente a aplicação.
+
+#### Subir o banco de dados
+
+Necessário ter docker instalado na máquina e executar os seguintes comandos:
+- Realização do pull da imagem
+```
+docker pull postgres
+```
+
+- Criação do container com a imagem
+```
+docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+```
+
+#### Adicionar string de conexão na aplicação
+No arquivo ```appsettings.json``` adicione a connection string substituindo ```myConnectionString``` pelas configurações locais do banco:
+
+```
+"ConnectionStrings": {
+  "SQLConnection": "myConnectionString"
+}
+```
+
+#### Execução do Migrations
+Com as configurações do banco feitas, agora é só realizar a criação das tabelas no banco com o Entity Framework(lembrando que é necessário o SDK do .NET 8) utilizando os seguintes comandos:
+```
+dotnet tool install --global dotnet-ef
+```
+E após:
+```
+dotnet ef database update
+```
+
+#### Executar aplicação WEB
+Com todos os passos até agora feitos, basta somente iniciar a aplicação WEB, lembre-se de estar no diretório do projeto ```CodeOrderAPI.csproj``` e executar na linha de comando o seguinte:
+```
+dotnet run
+```
+
+E pronto! Sua aplicação está rodando localmente com todas as funcionalidades disponíveis.
+
 
 # 💜 Participe
 Quer participar dos próximos desafios? Junte-se a [maior comunidade .NET do Brasil 🇧🇷 💜](https://balta.io/discord)
