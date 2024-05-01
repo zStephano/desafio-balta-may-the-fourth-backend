@@ -7,10 +7,10 @@ using System.Collections.Generic;
 
 namespace CodeOrderAPI.Routes;
 
-    public static class PlanetaRoute
+public static class PlanetaRoute
+{
+    public static void MapPlanetaEndpoints(this WebApplication app)
     {
-        public static void MapPlanetaEndpoints(this WebApplication app)
-        {
         app.MapGet("/Planeta", async (DataContext context, CancellationToken cancellationToken) =>
         {
             var planets = await context
@@ -49,7 +49,7 @@ namespace CodeOrderAPI.Routes;
                 return Results.Ok(planets);
 
             return Results.NoContent();
-        });
+        }).WithTags("Planeta");
 
         app.MapGet("/Planeta/{id}", async (
             [FromRoute] int id,
@@ -93,7 +93,7 @@ namespace CodeOrderAPI.Routes;
                 return Results.NoContent();
 
             return Results.Ok(planet);
-        });
+        }).WithTags("Planeta");
 
         app.MapDelete("/Planeta/{id}", async (
             [FromRoute] int id,
@@ -112,7 +112,7 @@ namespace CodeOrderAPI.Routes;
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Ok(modelFound);
-        });
+        }).WithTags("Planeta");
 
         app.MapPost("/Planeta", async (
             [FromBody] PlanetToAddViewModel modelToAdd,
@@ -164,7 +164,7 @@ namespace CodeOrderAPI.Routes;
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Created("/Planeta/{id}", modelAddedResult.Entity.Id);
-        });
+        }).WithTags("Planeta");
 
         app.MapPut("/Planeta/{id}", async (
             [FromRoute] int id,
@@ -231,7 +231,7 @@ namespace CodeOrderAPI.Routes;
             await context.SaveChangesAsync(cancellationToken);
 
             return Results.Ok(id);
-        });
+        }).WithTags("Planeta");
     }
 
     private static async Task<RelationResult<Personagem>> GetCharactersByIdsAsync(
